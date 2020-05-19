@@ -7,6 +7,8 @@ Nexys4DDR board.
 * [Episode 1 - Hello World](Episodes/ep01_Hello_World). Here we set up the
   directory structure and get a bitfile that generates a simple sawtooth
   waveform.
+* [Episode 2 - Sine Wave](Episodes/ep02_Sine_Wave). Here we look into how to
+  generate a pure sine wave in the FPGA.
 
 ## Links
 The [doc](doc) directory contains the [original
