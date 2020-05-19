@@ -3,6 +3,8 @@ XILINX_DIR = /opt/Xilinx/Vivado/2019.2
 
 # Add source files here as the project grows.
 SRC_DIR = ../src
+SRC    += $(SRC_DIR)/rom_freq.vhd
+SRC    += $(SRC_DIR)/calc_freq.vhd
 SRC    += $(SRC_DIR)/rom_logsin.vhd
 SRC    += $(SRC_DIR)/rom_exp.vhd
 SRC    += $(SRC_DIR)/float2fixed.vhd

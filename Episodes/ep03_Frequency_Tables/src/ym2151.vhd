@@ -23,16 +23,49 @@ end entity ym2151;
 
 architecture synthesis of ym2151 is
 
-   -- This should give a frequency of 3579545*8/2^16 = 437 Hz.
-   constant C_WAV_INC : integer := 8;
+   -- Clock Enable
+   signal cen_r          : std_logic := '0';
 
-   signal phase_r     : std_logic_vector(15 downto 0);
+   -- Device Index
+   signal idx_r          : std_logic_vector(4 downto 0);
 
-   signal sin_s       : std_logic_vector(15 downto 0) := (others => '0');
+   -- This selects the key A4, with frequency 440 Hz.
+   signal key_code_s     : std_logic_vector(6 downto 0) := "1001010";
+   signal key_fraction_s : std_logic_vector(5 downto 0) := (others => '0');
 
-   constant C_OFFSET  : std_logic_vector(15 downto 0) := X"8000";
+   signal phase_inc_s    : std_logic_vector(19 downto 0);
+   signal phase_r        : std_logic_vector(19 downto 0);
+
+   signal sin_s          : std_logic_vector(15 downto 0) := (others => '0');
+
+   constant C_OFFSET     : std_logic_vector(15 downto 0) := X"8000";
 
 begin
+
+   -----------------------------------------------------------------------------
+   -- Generate clock enable
+   -----------------------------------------------------------------------------
+
+   p_cen : process (clk_i)
+   begin
+      if rising_edge(clk_i) then
+         cen_r <= not cen_r;
+      end if;
+   end process p_cen;
+
+
+   -----------------------------------------------------------------------------
+   -- Calculate frequency from note.
+   -----------------------------------------------------------------------------
+
+   i_calc_freq : entity work.calc_freq
+      port map (
+         clk_i          => clk_i,
+         key_code_i     => key_code_s,
+         key_fraction_i => key_fraction_s,
+         phase_inc_o    => phase_inc_s
+      ); -- i_calc_freq
+
 
    -----------------------------------------------------------------------------
    -- Generate a linearly increasing phase.
@@ -40,10 +73,14 @@ begin
 
    p_phase : process (clk_i)
    begin
-      if rising_edge(clk_i) then
-         phase_r <= phase_r + C_WAV_INC;
+      if rising_edge(clk_i) and cen_r = '1' then
+         idx_r <= idx_r + 1;
+         if idx_r = 0 then
+            phase_r <= phase_r + phase_inc_s;
+         end if;
 
          if rst_i = '1' then
+            idx_r   <= (others => '0');
             phase_r <= (others => '0');
          end if;
       end if;
@@ -57,9 +94,9 @@ begin
    i_calc_sine : entity work.calc_sine
       port map (
          clk_i   => clk_i,
-         phase_i => phase_r(15 downto 6),
+         phase_i => phase_r(19 downto 10),
          sin_o   => sin_s(15 downto 2)
-      );
+      ); -- i_calc_sine
 
 
    -- Convert from signed to unsigned.

@@ -9,6 +9,9 @@ Nexys4DDR board.
   waveform.
 * [Episode 2 - Sine Wave](Episodes/ep02_Sine_Wave). Here we look into how to
   generate a pure sine wave in the FPGA.
+* [Episode 3 - Frequency Table](Episodes/ep03_Frequency_Tables). This episode
+  adds the logic necessary to calculate the correct frequency from the key
+  and fraction values.
 
 ## Links
 The [doc](doc) directory contains the [original
