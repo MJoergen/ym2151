@@ -12,15 +12,17 @@ These two numbers are fed into the calc\_freq module, which returns a 20-bit
 number representing the frequency of this note.
 
 ## Changes to ym2151.vhd
-The current phase is now increased to 20 bits for better precision. The upper
-10 bits are fed to the sine table calculation. The phase is updated once every
-32 internal clock cycles, so we introduce a global clock enable signal cen\_r
-that toggles between 0 and 1, and we introduce a running index that increases
-from 0 to 31.
+Since the YM2151 only operates at half the clock frequency, I've added
+a new internal clock signal clk\_int\_r and a correspondingly synchronized
+reset signal rst\_int\_r.
 
-Whenever the index wraps to 0, the phase is updated. This happens at a rate of
-3.579 MHz / 2 / 32 = 55.9 kHz.  These changes are implemented in the process
-p\_phase in ym2151.vhd.
+The current phase is now increased to 20 bits for better precision. The upper
+10 bits are fed to the sine table calculation.
+
+The phase is updated once every 32 internal clock cycles, so we introduce a
+slot index running from 0 to 31.  When the slot index wraps to 0, the phase is
+updated. This happens at a rate of 3.579 MHz / 2 / 32 = 55.9 kHz.  These
+changes are implemented in the process p\_phase in ym2151.vhd.
 
 ## calc\_freq
 Within the calc\_freq module. the key code is split into an octave number (3

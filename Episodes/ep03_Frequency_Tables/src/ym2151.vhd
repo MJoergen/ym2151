@@ -23,11 +23,12 @@ end entity ym2151;
 
 architecture synthesis of ym2151 is
 
-   -- Clock Enable
-   signal cen_r          : std_logic := '0';
+   -- Internal Clock and Reset
+   signal clk_int_r      : std_logic := '0';
+   signal rst_int_r      : std_logic := '1';
 
-   -- Device Index
-   signal idx_r          : std_logic_vector(4 downto 0);
+   -- Slot Index
+   signal slot_r         : std_logic_vector(4 downto 0);
 
    -- This selects the key A4, with frequency 440 Hz.
    signal key_code_s     : std_logic_vector(6 downto 0) := "1001010";
@@ -43,24 +44,52 @@ architecture synthesis of ym2151 is
 begin
 
    -----------------------------------------------------------------------------
-   -- Generate clock enable
+   -- Generate internal clock
    -----------------------------------------------------------------------------
 
-   p_cen : process (clk_i)
+   p_clk_int : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         cen_r <= not cen_r;
+         clk_int_r <= not clk_int_r;
       end if;
-   end process p_cen;
+   end process p_clk_int;
 
 
    -----------------------------------------------------------------------------
-   -- Calculate frequency from note.
+   -- Generate internal reset
+   -----------------------------------------------------------------------------
+
+   p_rst_int : process (clk_int_r)
+   begin
+      if rising_edge(clk_int_r) then
+         rst_int_r <= rst_i;
+      end if;
+   end process p_rst_int;
+
+
+   -----------------------------------------------------------------------------
+   -- Circulate through all slots
+   -----------------------------------------------------------------------------
+
+   p_slot : process (clk_int_r)
+   begin
+      if rising_edge(clk_int_r) then
+         slot_r <= slot_r + 1;
+
+         if rst_int_r = '1' then
+            slot_r  <= (others => '0');
+         end if;
+      end if;
+   end process p_slot;
+
+
+   -----------------------------------------------------------------------------
+   -- Calculate frequency for current key.
    -----------------------------------------------------------------------------
 
    i_calc_freq : entity work.calc_freq
       port map (
-         clk_i          => clk_i,
+         clk_i          => clk_int_r,
          key_code_i     => key_code_s,
          key_fraction_i => key_fraction_s,
          phase_inc_o    => phase_inc_s
@@ -68,19 +97,18 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- Generate a linearly increasing phase.
+   -- Update phase.
    -----------------------------------------------------------------------------
 
-   p_phase : process (clk_i)
+   p_phase : process (clk_int_r)
    begin
-      if rising_edge(clk_i) and cen_r = '1' then
-         idx_r <= idx_r + 1;
-         if idx_r = 0 then
+      if rising_edge(clk_int_r) then
+         -- Only update phase when in first slot
+         if slot_r = 0 then
             phase_r <= phase_r + phase_inc_s;
          end if;
 
-         if rst_i = '1' then
-            idx_r   <= (others => '0');
+         if rst_int_r = '1' then
             phase_r <= (others => '0');
          end if;
       end if;
@@ -88,19 +116,29 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- Calculate sin() of the phase
+   -- Calculate sin(phase).
    -----------------------------------------------------------------------------
 
    i_calc_sine : entity work.calc_sine
       port map (
-         clk_i   => clk_i,
+         clk_i   => clk_int_r,
          phase_i => phase_r(19 downto 10),
          sin_o   => sin_s(15 downto 2)
       ); -- i_calc_sine
 
 
+   -----------------------------------------------------------------------------
+   -- Generate output.
    -- Convert from signed to unsigned.
-   wav_o <= sin_s xor C_OFFSET;
+   -- Add register to reduce clock skew.
+   -----------------------------------------------------------------------------
+
+   p_wav : process (clk_i)
+   begin
+      if rising_edge(clk_i) then
+         wav_o <= sin_s xor C_OFFSET;
+      end if;
+   end process p_wav;
 
 end architecture synthesis;
 
