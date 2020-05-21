@@ -12,6 +12,9 @@ Nexys4DDR board.
 * [Episode 3 - Frequency Table](Episodes/ep03_Frequency_Tables). This episode
   adds the logic necessary to calculate the correct frequency from the key
   and fraction values.
+* [Episode 4 - Attenuator Accumulator](Episodes/ep04_Attenuator_Accumulator).
+  This episode accumulates the waveform of all 32 sine wave generators
+  together.
 
 ## Links
 The [doc](doc) directory contains the [original

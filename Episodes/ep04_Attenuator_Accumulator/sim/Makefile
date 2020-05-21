@@ -2,6 +2,9 @@
 
 # Add source files here as the project grows.
 SRC_DIR = ../src
+SRC    += $(SRC_DIR)/saturated_sum_unsigned.vhd
+SRC    += $(SRC_DIR)/saturated_sum_signed.vhd
+SRC    += $(SRC_DIR)/accumulator.vhd
 SRC    += $(SRC_DIR)/rom_freq.vhd
 SRC    += $(SRC_DIR)/calc_freq.vhd
 SRC    += $(SRC_DIR)/rom_logsin.vhd
