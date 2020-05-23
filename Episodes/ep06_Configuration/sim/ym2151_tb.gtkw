@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Sat May 23 05:29:13 2020
+[*]
+[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep05_Phase_Envelope_Generator/sim/build/ym2151_tb.fst"
+[dumpfile_mtime] "Sat May 23 05:18:25 2020"
+[dumpfile_size] 253354
+[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep05_Phase_Envelope_Generator/sim/ym2151_tb.gtkw"
+[timestart] 15347070000000
+[size] 1806 762
+[pos] -1 -1
+*-31.901743 15349940000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] i_ym2151.
+[treeopen] i_ym2151.i_accumulator.
+[sst_width] 405
+[signals_width] 247
+[sst_expanded] 1
+[sst_vpaned_height] 200
+@8022
+i_ym2151.wav_o[15:0]
+@800200
+-accumulator
+@22
+i_ym2151.i_accumulator.slot_i[4:0]
+i_ym2151.i_accumulator.value_i[13:0]
+i_ym2151.i_accumulator.sum_r[15:0]
+i_ym2151.i_accumulator.wav_o[15:0]
+@1000200
+-accumulator
+[pattern_trace] 1
+[pattern_trace] 0
