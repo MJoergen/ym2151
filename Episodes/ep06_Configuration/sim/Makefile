@@ -18,11 +18,14 @@ SRC    += $(SRC_DIR)/calc_sine.vhd
 SRC    += $(SRC_DIR)/ym2151.vhd
 
 # These are testbench related.
-TB      = ym2151_tb
-TB_SRC += wav2file.vhd
-TB_SRC += $(TB).vhd
-FST     = build/$(TB).fst
-SAVE    = $(TB).gtkw
+TB        = ym2151_tb
+TB_SRC   += ../nexys4ddr/rom_ctrl.vhd
+TB_SRC   += ../nexys4ddr/ctrl.vhd
+TB_SRC   += wav2file.vhd
+TB_SRC   += $(TB).vhd
+FST       = build/$(TB).fst
+SAVE      = $(TB).gtkw
+MUSIC_TXT = ../nexys4ddr/music.txt
 
 
 #####################################
@@ -32,10 +35,10 @@ SAVE    = $(TB).gtkw
 show: $(FST)
 	gtkwave $(FST) $(SAVE)
 
-$(FST): $(SRC) $(TB_SRC) build
+$(FST): $(SRC) $(TB_SRC) build $(MUSIC_TXT)
 	ghdl -i --ieee=synopsys --std=08 --workdir=build --work=work $(SRC) $(TB_SRC)
 	ghdl -m --ieee=synopsys --std=08 --workdir=build -frelaxed-rules $(TB)
-	ghdl -r $(TB) --assert-level=error --fst=$(FST)
+	ghdl -r $(TB) -gG_INPUT_FILENAME=$(MUSIC_TXT) --assert-level=error --fst=$(FST)
 
 build:
 	mkdir -p build

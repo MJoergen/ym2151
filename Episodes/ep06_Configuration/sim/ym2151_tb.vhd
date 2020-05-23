@@ -9,6 +9,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
 
 entity ym2151_tb is
+   generic (
+      G_INPUT_FILENAME  : string;
+      G_OUTPUT_FILENAME : string := "music.wav"
+   );
 end entity ym2151_tb;
 
 architecture simulation of ym2151_tb is
@@ -19,13 +23,16 @@ architecture simulation of ym2151_tb is
    -- Connected to the YM2151
    signal clk_s               : std_logic;
    signal rst_s               : std_logic;
+   signal cfg_valid_s         : std_logic;
+   signal cfg_ready_s         : std_logic;
+   signal cfg_addr_s          : std_logic_vector(7 downto 0);
+   signal cfg_data_s          : std_logic_vector(7 downto 0);
    signal wav_s               : std_logic_vector(15 downto 0);
 
+   signal playing_s           : std_logic;
    signal test_running_s      : std_logic := '1';
    signal test_running_r      : std_logic := '1';
    signal test_running_d      : std_logic := '1';
-
-   constant C_OUTPUT_FILENAME : string := "music.wav";
 
 begin
 
@@ -54,7 +61,8 @@ begin
 
    p_test_running : process
    begin
-      wait for 100 ms;
+      wait until playing_s = '1';
+      wait until playing_s = '0';      
       test_running_s <= '0';
       wait;
    end process p_test_running;
@@ -68,15 +76,38 @@ begin
    end process p_test_running_r;
 
 
+   ----------------------------------------------------------------
+   -- Instantiate controller
+   ----------------------------------------------------------------
+
+   i_ctrl : entity work.ctrl
+      generic map (
+         G_INIT_FILE => G_INPUT_FILENAME
+      )
+      port map (
+         clk_i       => clk_s,
+         rst_i       => rst_s,
+         playing_o   => playing_s,
+         cfg_valid_o => cfg_valid_s,
+         cfg_ready_i => cfg_ready_s,
+         cfg_addr_o  => cfg_addr_s,
+         cfg_data_o  => cfg_data_s
+      ); -- i_ctrl
+
+
    -----------------------------------------------------------------------------
    -- Instantiate the YM2151.
    -----------------------------------------------------------------------------
 
    i_ym2151 : entity work.ym2151
       port map (
-         clk_i => clk_s,
-         rst_i => rst_s,
-         wav_o => wav_s
+         clk_i       => clk_s,
+         rst_i       => rst_s,
+         cfg_valid_i => cfg_valid_s,
+         cfg_ready_o => cfg_ready_s,
+         cfg_addr_i  => cfg_addr_s,
+         cfg_data_i  => cfg_data_s,
+         wav_o       => wav_s
       ); -- i_ym2151
    
 
@@ -86,7 +117,7 @@ begin
 
    i_wav2file : entity work.wav2file
       generic map (
-         G_FILE_NAME => C_OUTPUT_FILENAME
+         G_FILE_NAME => G_OUTPUT_FILENAME
       )
       port map (
          clk_i    => clk_s,

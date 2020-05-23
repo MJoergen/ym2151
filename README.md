@@ -18,6 +18,8 @@ Nexys4DDR board.
 * [Episode 5 - Phase and Envelope Generator](Episodes/ep05_Phase_Envelope_Generator).
   This episode allows the design to play 32 difference sine waves
   simultaneously.
+* [Episode 6 - Configurator](Episodes/ep06_Configurator).
+  This episode allows the design to replay register writes from a text file.
 
 ## Links
 The [doc](doc) directory contains the [original

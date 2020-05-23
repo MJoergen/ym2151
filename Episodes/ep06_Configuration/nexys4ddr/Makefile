@@ -19,9 +19,12 @@ SRC    += $(SRC_DIR)/calc_sine.vhd
 SRC    += $(SRC_DIR)/ym2151.vhd
 
 # These are specific for the Nexys4DDR board.
-SRC    += nexys4ddr.vhd
-SRC    += clk_rst.vhd
-SRC    += pwm.vhd
+SRC      += nexys4ddr.vhd
+SRC      += clk_rst.vhd
+SRC      += ctrl.vhd
+SRC      += rom_ctrl.vhd
+SRC      += pwm.vhd
+MUSIC_TXT = music.txt
 
 
 #####################################
@@ -34,7 +37,7 @@ fpga: build/nexys4ddr.bit
 
 
 # Generate the bit-file used to configure the FPGA
-build/nexys4ddr.bit: build/nexys4ddr.tcl $(SRC) nexys4ddr.xdc
+build/nexys4ddr.bit: build/nexys4ddr.tcl $(SRC) nexys4ddr.xdc $(MUSIC_TXT)
 	bash -c "source $(XILINX_DIR)/settings64.sh ; vivado -mode tcl -source $<"
 
 

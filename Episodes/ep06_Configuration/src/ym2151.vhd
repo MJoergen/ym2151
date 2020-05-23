@@ -14,10 +14,15 @@ use ieee.numeric_std_unsigned.all;
 
 entity ym2151 is
    port (
-      clk_i : in  std_logic;
-      rst_i : in  std_logic;
+      clk_i       : in  std_logic;
+      rst_i       : in  std_logic;
+      -- Configuration interface
+      cfg_valid_i : in  std_logic;
+      cfg_ready_o : out std_logic;
+      cfg_addr_i  : in  std_logic_vector(7 downto 0);
+      cfg_data_i  : in  std_logic_vector(7 downto 0);
       -- Waveform output
-      wav_o : out std_logic_vector(15 downto 0)
+      wav_o       : out std_logic_vector(15 downto 0)
    );
 end entity ym2151;
 
@@ -79,7 +84,13 @@ begin
 
    i_configurator : entity work.configurator
       port map (
-         clk_i          => clk_int_r,
+         cfg_clk_i      => clk_i,
+         cfg_rst_i      => rst_i,
+         cfg_valid_i    => cfg_valid_i,
+         cfg_ready_o    => cfg_ready_o,
+         cfg_addr_i     => cfg_addr_i,
+         cfg_data_i     => cfg_data_i,
+         clk_int_i      => clk_int_r,
          slot_o         => slot_s,
          total_level_o  => total_level_s,
          key_code_o     => key_code_s,

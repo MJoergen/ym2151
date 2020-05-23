@@ -6,6 +6,9 @@ use ieee.numeric_std_unsigned.all;
 -- mapped directly to pins on the FPGA.
 
 entity nexys4ddr is
+   generic (
+      G_INIT_FILE : string := "music.txt"
+   );
    port (
       sys_clk_i  : in    std_logic;    -- 100 MHz
       sys_rstn_i : in    std_logic;
@@ -16,12 +19,16 @@ end nexys4ddr;
 
 architecture synthesis of nexys4ddr is
 
-   signal ym2151_clk_s : std_logic;
-   signal ym2151_rst_s : std_logic; 
-   signal ym2151_wav_s : std_logic_vector(15 downto 0);
+   signal ym2151_clk_s       : std_logic;
+   signal ym2151_rst_s       : std_logic; 
+   signal ym2151_cfg_valid_s : std_logic;
+   signal ym2151_cfg_ready_s : std_logic;
+   signal ym2151_cfg_addr_s  : std_logic_vector(7 downto 0);
+   signal ym2151_cfg_data_s  : std_logic_vector(7 downto 0);
+   signal ym2151_wav_s       : std_logic_vector(15 downto 0);
 
-   signal pwm_clk_s    : std_logic;
-   signal pwm_aud_s    : std_logic;
+   signal pwm_clk_s          : std_logic;
+   signal pwm_aud_s          : std_logic;
 
 begin
 
@@ -40,14 +47,36 @@ begin
 
 
    -----------------------------------------------------------------------------
+   -- Instantiate controller.
+   -----------------------------------------------------------------------------
+
+   i_ctrl : entity work.ctrl
+      generic map (
+         G_INIT_FILE => G_INIT_FILE
+      )
+      port map (
+         clk_i       => ym2151_clk_s,
+         rst_i       => ym2151_rst_s,
+         cfg_valid_o => ym2151_cfg_valid_s,
+         cfg_ready_i => ym2151_cfg_ready_s,
+         cfg_addr_o  => ym2151_cfg_addr_s,
+         cfg_data_o  => ym2151_cfg_data_s
+      ); -- i_ctrl
+
+
+   -----------------------------------------------------------------------------
    -- Instantiate YM2151 module.
    -----------------------------------------------------------------------------
 
    i_ym2151 : entity work.ym2151
       port map (
-         clk_i => ym2151_clk_s,
-         rst_i => ym2151_rst_s,
-         wav_o => ym2151_wav_s
+         clk_i       => ym2151_clk_s,
+         rst_i       => ym2151_rst_s,
+         cfg_valid_i => ym2151_cfg_valid_s,
+         cfg_ready_o => ym2151_cfg_ready_s,
+         cfg_addr_i  => ym2151_cfg_addr_s,
+         cfg_data_i  => ym2151_cfg_data_s,
+         wav_o       => ym2151_wav_s
       ); -- i_ym2151
 
 
