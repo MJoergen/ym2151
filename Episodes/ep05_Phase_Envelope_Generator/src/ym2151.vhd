@@ -27,24 +27,6 @@ architecture synthesis of ym2151 is
    signal clk_int_r      : std_logic := '0';
    signal rst_int_r      : std_logic := '1';
 
-<<<<<<< HEAD
-   -- Slot Index
-   signal slot_r         : std_logic_vector(4 downto 0);
-
-   -- Attenutation in units of 1/64'th powers of 0.5.
-   signal atten_s        : std_logic_vector(9 downto 0);
-
-   -- This selects the key A4, with frequency 440 Hz.
-   signal key_code_s     : std_logic_vector(6 downto 0) := "1001010";
-   signal key_fraction_s : std_logic_vector(5 downto 0) := (others => '0');
-
-   signal phase_inc_s    : std_logic_vector(19 downto 0);
-   signal phase_r        : std_logic_vector(19 downto 0);
-
-   signal sin_s          : std_logic_vector(13 downto 0);
-
-   signal slot_s         : std_logic_vector(4 downto 0);
-=======
    -- Output from Configurator
    signal slot_s         : std_logic_vector(4 downto 0);
    signal total_level_s  : std_logic_vector(6 downto 0);
@@ -61,7 +43,6 @@ architecture synthesis of ym2151 is
    signal sin_VI_s       : std_logic_vector(13 downto 0);
 
    signal slot_VI_s      : std_logic_vector(4 downto 0);
->>>>>>> wip5
 
    signal wav_s          : std_logic_vector(15 downto 0);
    constant C_OFFSET     : std_logic_vector(15 downto 0) := X"8000";   
