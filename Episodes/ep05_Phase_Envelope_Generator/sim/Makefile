@@ -2,6 +2,10 @@
 
 # Add source files here as the project grows.
 SRC_DIR = ../src
+SRC    += $(SRC_DIR)/ring_buffer.vhd
+SRC    += $(SRC_DIR)/configurator.vhd
+SRC    += $(SRC_DIR)/phase_generator.vhd
+SRC    += $(SRC_DIR)/envelope_generator.vhd
 SRC    += $(SRC_DIR)/saturated_sum_unsigned.vhd
 SRC    += $(SRC_DIR)/saturated_sum_signed.vhd
 SRC    += $(SRC_DIR)/accumulator.vhd

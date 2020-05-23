@@ -15,6 +15,9 @@ Nexys4DDR board.
 * [Episode 4 - Attenuator Accumulator](Episodes/ep04_Attenuator_Accumulator).
   This episode accumulates the waveform of all 32 sine wave generators
   together.
+* [Episode 5 - Phase and Envelope Generator](Episodes/ep05_Phase_Envelope_Generator).
+  This episode allows the design to play 32 difference sine waves
+  simultaneously.
 
 ## Links
 The [doc](doc) directory contains the [original

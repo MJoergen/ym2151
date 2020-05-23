@@ -27,6 +27,7 @@ architecture synthesis of ym2151 is
    signal clk_int_r      : std_logic := '0';
    signal rst_int_r      : std_logic := '1';
 
+<<<<<<< HEAD
    -- Slot Index
    signal slot_r         : std_logic_vector(4 downto 0);
 
@@ -43,6 +44,24 @@ architecture synthesis of ym2151 is
    signal sin_s          : std_logic_vector(13 downto 0);
 
    signal slot_s         : std_logic_vector(4 downto 0);
+=======
+   -- Output from Configurator
+   signal slot_s         : std_logic_vector(4 downto 0);
+   signal total_level_s  : std_logic_vector(6 downto 0);
+   signal key_code_s     : std_logic_vector(6 downto 0);
+   signal key_fraction_s : std_logic_vector(5 downto 0);
+
+   -- Output from Phase Generator
+   signal phase_III_s    : std_logic_vector(9 downto 0);
+
+   -- Output from Envelope Generator
+   signal atten_III_s    : std_logic_vector(9 downto 0);
+
+   -- Output from Calc Sine
+   signal sin_VI_s       : std_logic_vector(13 downto 0);
+
+   signal slot_VI_s      : std_logic_vector(4 downto 0);
+>>>>>>> wip5
 
    signal wav_s          : std_logic_vector(15 downto 0);
    constant C_OFFSET     : std_logic_vector(15 downto 0) := X"8000";   
@@ -74,58 +93,44 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- Circulate through all slots
+   -- Instantiate Configurator
    -----------------------------------------------------------------------------
 
-   p_slot : process (clk_int_r)
-   begin
-      if rising_edge(clk_int_r) then
-         slot_r <= slot_r + 1;
-
-         if rst_int_r = '1' then
-            slot_r  <= (others => '0');
-         end if;
-      end if;
-   end process p_slot;
-
-
-   -----------------------------------------------------------------------------
-   -- Select attenuation for the various slots
-   -----------------------------------------------------------------------------
-
-   atten_s <= (others => '0') when slot_r = 0 else (others => '1');
-
-
-   -----------------------------------------------------------------------------
-   -- Calculate frequency for current key.
-   -----------------------------------------------------------------------------
-
-   i_calc_freq : entity work.calc_freq
+   i_configurator : entity work.configurator
       port map (
          clk_i          => clk_int_r,
+         slot_o         => slot_s,
+         total_level_o  => total_level_s,
+         key_code_o     => key_code_s,
+         key_fraction_o => key_fraction_s
+      ); -- i_configurator
+
+
+   -----------------------------------------------------------------------------
+   -- Instantiate Phase Generator
+   -----------------------------------------------------------------------------
+
+   i_phase_generator : entity work.phase_generator
+      port map (
+         clk_i          => clk_int_r,
+         rst_i          => rst_int_r,
          key_code_i     => key_code_s,
          key_fraction_i => key_fraction_s,
-         phase_inc_o    => phase_inc_s
-      ); -- i_calc_freq
+         phase_III_o    => phase_III_s
+      ); -- i_phase_generator
 
 
    -----------------------------------------------------------------------------
-   -- Update phase.
+   -- Instantiate Envelope Generator
    -----------------------------------------------------------------------------
 
-   p_phase : process (clk_int_r)
-   begin
-      if rising_edge(clk_int_r) then
-         -- Only update phase when in first slot
-         if slot_r = 0 then
-            phase_r <= phase_r + phase_inc_s;
-         end if;
-
-         if rst_int_r = '1' then
-            phase_r <= (others => '0');
-         end if;
-      end if;
-   end process p_phase;
+   i_envelope_generator : entity work.envelope_generator
+      port map (
+         clk_i         => clk_int_r,
+         rst_i         => rst_int_r,
+         total_level_i => total_level_s,
+         atten_III_o   => atten_III_s
+      ); -- i_envelope_generator
 
 
    -----------------------------------------------------------------------------
@@ -135,9 +140,9 @@ begin
    i_calc_sine : entity work.calc_sine
       port map (
          clk_i   => clk_int_r,
-         atten_i => atten_s,
-         phase_i => phase_r(19 downto 10),
-         sin_o   => sin_s
+         atten_i => atten_III_s,
+         phase_i => phase_III_s,
+         sin_o   => sin_VI_s
       ); -- i_calc_sine
 
 
@@ -145,14 +150,14 @@ begin
    -- Accumulate results from all slots.
    -----------------------------------------------------------------------------
 
-   slot_s <= slot_r - 3;   -- Adjust for latency in calc_sine.
+   slot_VI_s <= slot_s - 6;   -- Adjust for latency.
 
    i_accumulator : entity work.accumulator
       port map (
          clk_i   => clk_int_r,
          rst_i   => rst_int_r,
-         slot_i  => slot_s,
-         value_i => sin_s,
+         slot_i  => slot_VI_s,
+         value_i => sin_VI_s,
          wav_o   => wav_s
       ); -- i_accumulator
 
