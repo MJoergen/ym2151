@@ -27,7 +27,7 @@ change as we add more features to the design.
 
 ## Testing in hardware
 The above change was quite limited. But in order to test in hardware (and in
-simulation), we now need to do a substatntial amount of additional work. The
+simulation), we now need to do a substantial amount of additional work. The
 point being that the YM2151 now relies on receiving the configuration from an
 external entity, rather than the specific tones being hardcoded in the design.
 
@@ -44,11 +44,11 @@ address and the second byte the register value.  For instance, the line "2087"
 means write the hexadecimal value 0x87 to the register at hexadecimal address
 0x20.
 
-The file music.txt consists of a number of register writes, many of which are
-not yet supported by the current design. However, on the real YM2151 (or any
-emulator) these register writes are necessary in order to get the YM2151 to
-produce a sound. For instance, some of these register writes configure the
-envelope generator, a topic for a later episode.
+The file music.txt used in this episode consists of a number of register
+writes, many of which are not yet supported by the current design. However, on
+the real YM2151 (or any emulator) these register writes are necessary in order
+to get the YM2151 to produce a sound. For instance, some of these register
+writes configure the envelope generator, a topic for a later episode.
 
 With the current contents of the file music.txt the current design will produce
 the same output as the real chip: Three musical notes, with the following
