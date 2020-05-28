@@ -42,6 +42,10 @@ resolution of 8 bits, and the output has resolution of 12 bits.
 
 The result is in units of 1/256'th powers of 0.5.
 
+The 12-bit output consists of 4 bits for the integer value and 8 bits for the
+fractional value.  The output range is therefore between 0 and 2^4 = 16. This
+corresponds to a dynamic range of 6\*16 = 96 dB.
+
 ### Stage 2
 The upper four bits of logsin are the exponent part (in base 2).  They indicate
 how many bits to shift (between 0 and 15).  The lower eight bits of logsin are
