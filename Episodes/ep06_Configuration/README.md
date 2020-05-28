@@ -22,8 +22,8 @@ are running at a sufficiently low speed, it is not necessary to make special
 Clock Domain Crossing considerations.
 
 With the above changes, the design now correctly reacts to register writes!
-Mind you, only a few register addresses are currently supported, but that can
-will change as we add more features to the design.
+Mind you, only a few register addresses are currently supported, but that will
+change as we add more features to the design.
 
 ## Testing in hardware
 The above change was quite limited. But in order to test in hardware (and in
