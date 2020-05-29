@@ -98,7 +98,8 @@ begin
             cfg_addr_r  <= (others => '0');
             cfg_data_r  <= (others => '0');
             rom_addr_r  <= (others => '0');
-            cnt_r       <= (others => '0');
+            -- Wait 200 clock cycles before issuing writes to the YM2151.
+            cnt_r       <= to_stdlogicvector(200, 21);
             state_r     <= WAIT_ST;
          end if;
       end if;

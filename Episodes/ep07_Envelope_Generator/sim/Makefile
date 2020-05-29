@@ -5,9 +5,13 @@ SRC_DIR = ../src
 SRC    += $(SRC_DIR)/ring_buffer.vhd
 SRC    += $(SRC_DIR)/configurator.vhd
 SRC    += $(SRC_DIR)/phase_generator.vhd
-SRC    += $(SRC_DIR)/envelope_generator.vhd
 SRC    += $(SRC_DIR)/saturated_sum_unsigned.vhd
 SRC    += $(SRC_DIR)/saturated_sum_signed.vhd
+SRC    += $(SRC_DIR)/eg_state.vhd
+SRC    += $(SRC_DIR)/eg_rate.vhd
+SRC    += $(SRC_DIR)/eg_timing.vhd
+SRC    += $(SRC_DIR)/eg_attenuation.vhd
+SRC    += $(SRC_DIR)/envelope_generator.vhd
 SRC    += $(SRC_DIR)/accumulator.vhd
 SRC    += $(SRC_DIR)/rom_freq.vhd
 SRC    += $(SRC_DIR)/calc_freq.vhd
@@ -22,10 +26,11 @@ TB        = ym2151_tb
 TB_SRC   += ../nexys4ddr/rom_ctrl.vhd
 TB_SRC   += ../nexys4ddr/ctrl.vhd
 TB_SRC   += wav2file.vhd
+TB_SRC   += timer.vhd
 TB_SRC   += $(TB).vhd
 FST       = build/$(TB).fst
 SAVE      = $(TB).gtkw
-MUSIC_TXT = ../nexys4ddr/music.txt
+MUSIC_TXT = music.txt
 
 
 #####################################
@@ -38,7 +43,7 @@ show: $(FST)
 $(FST): $(SRC) $(TB_SRC) build $(MUSIC_TXT)
 	ghdl -i --ieee=synopsys --std=08 --workdir=build --work=work $(SRC) $(TB_SRC)
 	ghdl -m --ieee=synopsys --std=08 --workdir=build -frelaxed-rules $(TB)
-	ghdl -r $(TB) -gG_INPUT_FILENAME=$(MUSIC_TXT) --assert-level=error --fst=$(FST)
+	ghdl -r $(TB) -gG_INPUT_FILENAME=$(MUSIC_TXT) --assert-level=error --fst=$(FST) --stop-time=100ms
 
 build:
 	mkdir -p build

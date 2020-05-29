@@ -14,43 +14,52 @@ use ieee.numeric_std_unsigned.all;
 
 entity ym2151 is
    port (
-      clk_i       : in  std_logic;
-      rst_i       : in  std_logic;
+      clk_i        : in  std_logic;
+      rst_i        : in  std_logic;
       -- Configuration interface
-      cfg_valid_i : in  std_logic;
-      cfg_ready_o : out std_logic;
-      cfg_addr_i  : in  std_logic_vector(7 downto 0);
-      cfg_data_i  : in  std_logic_vector(7 downto 0);
+      cfg_valid_i  : in  std_logic;
+      cfg_ready_o  : out std_logic;
+      cfg_addr_i   : in  std_logic_vector(7 downto 0);
+      cfg_data_i   : in  std_logic_vector(7 downto 0);
+      -- Debug output
+      deb_atten0_o : out std_logic_vector(9 downto 0) := (others => '1');
       -- Waveform output
-      wav_o       : out std_logic_vector(15 downto 0)
+      wav_o        : out std_logic_vector(15 downto 0)
    );
 end entity ym2151;
 
 architecture synthesis of ym2151 is
 
    -- Internal Clock and Reset
-   signal clk_int_r      : std_logic := '0';
-   signal rst_int_r      : std_logic := '1';
+   signal clk_int_r       : std_logic := '0';
+   signal rst_int_r       : std_logic := '1';
 
    -- Output from Configurator
-   signal slot_s         : std_logic_vector(4 downto 0);
-   signal total_level_s  : std_logic_vector(6 downto 0);
-   signal key_code_s     : std_logic_vector(6 downto 0);
-   signal key_fraction_s : std_logic_vector(5 downto 0);
+   signal slot_s          : std_logic_vector(4 downto 0);
+   signal keyon_s         : std_logic;
+   signal key_code_s      : std_logic_vector(6 downto 0);
+   signal key_fraction_s  : std_logic_vector(5 downto 0);
+   signal total_level_s   : std_logic_vector(6 downto 0);
+   signal attack_rate_s   : std_logic_vector(4 downto 0);
+   signal key_scale_s     : std_logic_vector(1 downto 0);
+   signal decay_rate_s    : std_logic_vector(4 downto 0);
+   signal sustain_rate_s  : std_logic_vector(4 downto 0);
+   signal sustain_level_s : std_logic_vector(3 downto 0);
+   signal release_rate_s  : std_logic_vector(3 downto 0);
 
    -- Output from Phase Generator
-   signal phase_III_s    : std_logic_vector(9 downto 0);
+   signal phase_III_s     : std_logic_vector(9 downto 0);
 
    -- Output from Envelope Generator
-   signal atten_III_s    : std_logic_vector(9 downto 0);
+   signal atten_III_s     : std_logic_vector(9 downto 0);
 
    -- Output from Calc Sine
-   signal sin_VI_s       : std_logic_vector(13 downto 0);
+   signal sin_VI_s        : std_logic_vector(13 downto 0);
 
-   signal slot_VI_s      : std_logic_vector(4 downto 0);
+   signal slot_VI_s       : std_logic_vector(4 downto 0);
 
-   signal wav_s          : std_logic_vector(15 downto 0);
-   constant C_OFFSET     : std_logic_vector(15 downto 0) := X"8000";   
+   signal wav_s           : std_logic_vector(15 downto 0);
+   constant C_OFFSET      : std_logic_vector(15 downto 0) := X"8000";
 
 begin
 
@@ -84,17 +93,24 @@ begin
 
    i_configurator : entity work.configurator
       port map (
-         cfg_clk_i      => clk_i,
-         cfg_rst_i      => rst_i,
-         cfg_valid_i    => cfg_valid_i,
-         cfg_ready_o    => cfg_ready_o,
-         cfg_addr_i     => cfg_addr_i,
-         cfg_data_i     => cfg_data_i,
-         clk_int_i      => clk_int_r,
-         slot_o         => slot_s,
-         total_level_o  => total_level_s,
-         key_code_o     => key_code_s,
-         key_fraction_o => key_fraction_s
+         cfg_clk_i       => clk_i,
+         cfg_rst_i       => rst_i,
+         cfg_valid_i     => cfg_valid_i,
+         cfg_ready_o     => cfg_ready_o,
+         cfg_addr_i      => cfg_addr_i,
+         cfg_data_i      => cfg_data_i,
+         clk_int_i       => clk_int_r,
+         slot_o          => slot_s,
+         keyon_o         => keyon_s,
+         key_code_o      => key_code_s,
+         key_fraction_o  => key_fraction_s,
+         total_level_o   => total_level_s,
+         attack_rate_o   => attack_rate_s,
+         key_scale_o     => key_scale_s,
+         decay_rate_o    => decay_rate_s,
+         sustain_rate_o  => sustain_rate_s,
+         sustain_level_o => sustain_level_s,
+         release_rate_o  => release_rate_s
       ); -- i_configurator
 
 
@@ -118,10 +134,18 @@ begin
 
    i_envelope_generator : entity work.envelope_generator
       port map (
-         clk_i         => clk_int_r,
-         rst_i         => rst_int_r,
-         total_level_i => total_level_s,
-         atten_III_o   => atten_III_s
+         clk_i           => clk_int_r,
+         rst_i           => rst_int_r,
+         key_code_i      => key_code_s,
+         key_scale_i     => key_scale_s,
+         keyon_i         => keyon_s,
+         total_level_i   => total_level_s,
+         attack_rate_i   => attack_rate_s,
+         decay_rate_i    => decay_rate_s,
+         sustain_rate_i  => sustain_rate_s,
+         sustain_level_i => sustain_level_s,
+         release_rate_i  => release_rate_s,
+         atten_III_o     => atten_III_s
       ); -- i_envelope_generator
 
 
@@ -165,6 +189,19 @@ begin
          wav_o <= wav_s xor C_OFFSET;
       end if;
    end process p_wav;
+
+   -- Debug
+   p_debug : process (clk_i)
+   begin
+      if rising_edge(clk_i) then
+         if slot_s = 3 then
+            deb_atten0_o <= atten_III_s;
+         end if;
+         if rst_i = '1' then
+            deb_atten0_o <= (others => '1');
+         end if;
+      end if;
+   end process p_debug;
 
 end architecture synthesis;
 

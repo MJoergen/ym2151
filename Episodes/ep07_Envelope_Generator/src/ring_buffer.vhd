@@ -14,8 +14,9 @@ use ieee.numeric_std_unsigned.all;
 
 entity ring_buffer is
    generic (
-      G_WIDTH  : integer;
-      G_STAGES : integer
+      G_WIDTH    : integer;
+      G_STAGES   : integer;
+      G_INIT_VAL : integer := 0
    );
    port (
       clk_i  : in  std_logic;
@@ -27,7 +28,7 @@ end entity ring_buffer;
 architecture synthesis of ring_buffer is
 
    type BUFFER_t is array (0 to G_STAGES-1) of std_logic_vector(G_WIDTH-1 downto 0);
-   signal buffer_r : BUFFER_t := (others => (others => '0'));
+   signal buffer_r : BUFFER_t := (others => to_stdlogicvector(G_INIT_VAL, G_WIDTH));
 
 begin
 

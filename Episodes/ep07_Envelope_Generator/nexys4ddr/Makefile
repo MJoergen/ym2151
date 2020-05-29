@@ -6,9 +6,13 @@ SRC_DIR = ../src
 SRC    += $(SRC_DIR)/ring_buffer.vhd
 SRC    += $(SRC_DIR)/configurator.vhd
 SRC    += $(SRC_DIR)/phase_generator.vhd
-SRC    += $(SRC_DIR)/envelope_generator.vhd
 SRC    += $(SRC_DIR)/saturated_sum_unsigned.vhd
 SRC    += $(SRC_DIR)/saturated_sum_signed.vhd
+SRC    += $(SRC_DIR)/eg_state.vhd
+SRC    += $(SRC_DIR)/eg_rate.vhd
+SRC    += $(SRC_DIR)/eg_timing.vhd
+SRC    += $(SRC_DIR)/eg_attenuation.vhd
+SRC    += $(SRC_DIR)/envelope_generator.vhd
 SRC    += $(SRC_DIR)/accumulator.vhd
 SRC    += $(SRC_DIR)/rom_freq.vhd
 SRC    += $(SRC_DIR)/calc_freq.vhd
@@ -24,7 +28,7 @@ SRC      += clk_rst.vhd
 SRC      += ctrl.vhd
 SRC      += rom_ctrl.vhd
 SRC      += pwm.vhd
-MUSIC_TXT = music.txt
+MUSIC_TXT = Ievan_Polkka.txt
 
 
 #####################################
@@ -47,7 +51,7 @@ build/nexys4ddr.tcl: Makefile
 	echo "# This is a tcl command script for the Vivado tool chain" > $@
 	echo "read_vhdl -vhdl2008 { $(SRC)  }" >> $@
 	echo "read_xdc nexys4ddr.xdc" >> $@
-	echo "synth_design -top nexys4ddr -part xc7a100tcsg324-1 -flatten_hierarchy none" >> $@
+	echo "synth_design -top nexys4ddr -part xc7a100tcsg324-1 -flatten_hierarchy none -generic {G_INIT_FILE="$(MUSIC_TXT)"}" >> $@
 	echo "opt_design -directive NoBramPowerOpt" >> $@
 	echo "place_design" >> $@
 	echo "route_design" >> $@
