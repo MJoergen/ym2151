@@ -16,7 +16,7 @@ entity calc_freq is
       clk_i          : in  std_logic;
       key_code_i     : in  std_logic_vector(6 downto 0);
       key_fraction_i : in  std_logic_vector(5 downto 0);
-      phase_inc_o    : out std_logic_vector(19 downto 0)
+      phase_inc_II_o : out std_logic_vector(19 downto 0)
    );
 end entity calc_freq; 
 
@@ -77,7 +77,7 @@ begin
       end if;
    end process p_phase_inc;
 
-   phase_inc_o <= phase_inc_II_r(21 downto 2);
+   phase_inc_II_o <= phase_inc_II_r(21 downto 2);
 
 end architecture synthesis;
 

@@ -46,18 +46,19 @@ a Makefile.
 
 The testbench instantiates the YM2151 and connects the output to the module
 wav2file, which samples the output at 55.9 kHz and writes to the file
-music.wav.
+output.wav.
 
 ### Testing the design in simulation
 To run the simulation, just enter the directory sim and type "make". When the
 simulation has completed, the waveform viewer will automatically be opened.
-Optionally, the generated file music.wav can be viewed/analyzed using a program
+Optionally, the generated file output.wav can be viewed/analyzed using a program
 like audacity.  Here the generated waveform can be verified to be a sawtooth
 waveform at frequency 437 Hz. The length of the simulation is written in line
-57 of ym2151\_tb.vhd.
+58 of ym2151\_tb.vhd.
 
 During the development of this design we will frequently make use of audacity
-to verify the correctness of the generated output.
+to verify the correctness of the generated output. Later on, we'll modify the
+testbench to be self-verifying, but more on that in a later episode.
 
 ## nexys4ddr
 This directory contains a simple example design to run on the Nexys4DDR board.

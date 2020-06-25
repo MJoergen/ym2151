@@ -1,19 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri May 15 10:15:55 2020
+[*] Wed Jun 24 15:24:43 2020
 [*]
-[dumpfile] "/home/mike/git/MJoergen/ym2151/sim/build/ym2151_tb.fst"
-[dumpfile_mtime] "Fri May 15 10:14:51 2020"
-[dumpfile_size] 18015
-[savefile] "/home/mike/git/MJoergen/ym2151/sim/ym2151_tb.gtkw"
+[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep01_Hello_World/sim/build/ym2151_tb.fst"
+[dumpfile_mtime] "Wed Jun 24 15:24:28 2020"
+[dumpfile_size] 712
+[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep01_Hello_World/sim/ym2151_tb.gtkw"
 [timestart] 0
-[size] 1257 762
-[pos] -258 -163
-*-44.741467 15400001964375 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[sst_width] 353
-[signals_width] 177
+[size] 1000 600
+[pos] -1 -1
+*-45.011307 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 249
+[signals_width] 140
 [sst_expanded] 1
-[sst_vpaned_height] 200
+[sst_vpaned_height] 143
 @8023
 i_ym2151.wav_o[15:0]
 [pattern_trace] 1

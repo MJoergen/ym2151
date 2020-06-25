@@ -72,6 +72,6 @@ In the Configurator I've instructed the design to generate three notes:
 * C6 (with frequency 1047 Hz) at -18 dB.
 
 Running the simulation and analyzing with audacity the generated output file
-music.wav confirms the above. The same does running the design in the FPGA on
+output.wav confirms the above. The same does running the design in the FPGA on
 the Nexys4DDR board.
 

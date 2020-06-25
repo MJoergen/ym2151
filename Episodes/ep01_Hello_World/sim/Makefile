@@ -1,4 +1,8 @@
-# Makefile for simulating the design
+# Author:  Michael Jørgensen
+# License: Public domain; do with it what you like :-)
+# Project: YM2151 implementation
+#
+# Description: Makefile for simulating the design.
 
 # Add source files here as the project grows.
 SRC_DIR = ../src
@@ -16,13 +20,14 @@ SAVE    = $(TB).gtkw
 # Simulation.
 #####################################
 
+.PHONY: show
 show: $(FST)
 	gtkwave $(FST) $(SAVE)
 
 $(FST): $(SRC) $(TB_SRC) build
-	ghdl -i --ieee=synopsys --std=08 --workdir=build --work=work $(SRC) $(TB_SRC)
-	ghdl -m --ieee=synopsys --std=08 --workdir=build -frelaxed-rules $(TB)
-	ghdl -r $(TB) --assert-level=error --fst=$(FST)
+	ghdl -i --std=08 --workdir=build $(SRC) $(TB_SRC)
+	ghdl -m --std=08 --workdir=build $(TB)
+	ghdl -r --std=08 --workdir=build $(TB) --fst=$(FST)
 
 build:
 	mkdir -p build
@@ -34,7 +39,5 @@ build:
 
 clean:
 	rm -rf build
-	rm -rf *.o
-	rm -rf $(TB)
-	rm -rf music.wav
+	rm -rf output.wav
 

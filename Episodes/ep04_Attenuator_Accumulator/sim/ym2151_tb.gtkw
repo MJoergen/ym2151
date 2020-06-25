@@ -1,32 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed May 20 07:42:37 2020
+[*] Wed Jun 24 15:08:14 2020
 [*]
-[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep04_Accumulator/sim/build/ym2151_tb.fst"
-[dumpfile_mtime] "Wed May 20 07:42:29 2020"
-[dumpfile_size] 93798
-[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep04_Accumulator/sim/ym2151_tb.gtkw"
-[timestart] 15344510000000
-[size] 1806 762
+[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep04_Attenuator_Accumulator/sim/build/ym2151_tb.fst"
+[dumpfile_mtime] "Wed Jun 24 15:07:55 2020"
+[dumpfile_size] 95522
+[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep04_Attenuator_Accumulator/sim/ym2151_tb.gtkw"
+[timestart] 0
+[size] 1000 600
 [pos] -1 -1
-*-31.741467 15347170000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] i_ym2151.
-[treeopen] i_ym2151.i_accumulator.
-[sst_width] 295
-[signals_width] 247
+*-45.136837 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 296
+[signals_width] 140
 [sst_expanded] 1
-[sst_vpaned_height] 200
-@8022
+[sst_vpaned_height] 143
+@8023
 i_ym2151.wav_o[15:0]
-@800200
--accumulator
-@22
-i_ym2151.i_accumulator.slot_i[4:0]
-i_ym2151.i_accumulator.value_i[13:0]
-i_ym2151.i_accumulator.sum_r[15:0]
-@23
-i_ym2151.i_accumulator.wav_o[15:0]
-@1000200
--accumulator
 [pattern_trace] 1
 [pattern_trace] 0

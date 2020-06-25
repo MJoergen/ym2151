@@ -1,3 +1,9 @@
+# Author:  Michael Jørgensen
+# License: Public domain; do with it what you like :-)
+# Project: YM2151 implementation
+#
+# Description: Makefile for generating bitfile.
+
 # Specify install location of the Xilinx Vivado tool
 XILINX_DIR = /opt/Xilinx/Vivado/2019.2
 
@@ -6,11 +12,11 @@ SRC_DIR = ../src
 SRC    += $(SRC_DIR)/saturated_sum_unsigned.vhd
 SRC    += $(SRC_DIR)/saturated_sum_signed.vhd
 SRC    += $(SRC_DIR)/accumulator.vhd
-SRC    += $(SRC_DIR)/rom_freq.vhd
-SRC    += $(SRC_DIR)/calc_freq.vhd
-SRC    += $(SRC_DIR)/rom_logsin.vhd
-SRC    += $(SRC_DIR)/rom_exp.vhd
-SRC    += $(SRC_DIR)/float2fixed.vhd
+SRC    += $(SRC_DIR)/pg/rom_freq.vhd
+SRC    += $(SRC_DIR)/pg/calc_freq.vhd
+SRC    += $(SRC_DIR)/op/rom_logsin.vhd
+SRC    += $(SRC_DIR)/op/rom_exp.vhd
+SRC    += $(SRC_DIR)/op/float2fixed.vhd
 SRC    += $(SRC_DIR)/calc_sine.vhd
 SRC    += $(SRC_DIR)/ym2151.vhd
 

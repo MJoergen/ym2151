@@ -26,7 +26,10 @@ complexity.
 
 In the following I'm referring to the file
 [calc\_sine.vhd](src/calc\_sine.vhd). The calculation is split into a number of
-stages.
+stages. The files for the stages have been placed in a separate directory op.
+The reason for this is to match figure 2.1 in the [YM2151
+documentation](../../doc/yamaha_ym2151_synthesis.pdf) and to keep the source tree
+nice and tidy.
 
 ### Stage 0
 The input phase\_i represents an angle between 0 to 2\*pi, and has a resolution

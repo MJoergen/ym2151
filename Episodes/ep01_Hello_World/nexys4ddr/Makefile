@@ -1,3 +1,9 @@
+# Author:  Michael Jørgensen
+# License: Public domain; do with it what you like :-)
+# Project: YM2151 implementation
+#
+# Description: Makefile for generating bitfile.
+
 # Specify install location of the Xilinx Vivado tool
 XILINX_DIR = /opt/Xilinx/Vivado/2019.2
 
