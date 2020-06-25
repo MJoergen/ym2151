@@ -32,13 +32,13 @@ end entity phase_generator;
 architecture synthesis of phase_generator is
 
    -- Output from calc_freq.
-   signal phase_inc_II_s : std_logic_vector(19 downto 0);
+   signal phase_inc_II_s  : std_logic_vector(19 downto 0);
 
    -- Output from ring_buffer.
-   signal phase_II_s     : std_logic_vector(19 downto 0);
+   signal last_phase_II_s : std_logic_vector(19 downto 0);
 
    -- Input to ring_buffer.
-   signal phase_III_r    : std_logic_vector(19 downto 0);
+   signal phase_II_s      : std_logic_vector(19 downto 0);
 
 begin
 
@@ -51,42 +51,48 @@ begin
          clk_i          => clk_i,
          key_code_i     => key_code_i,
          key_fraction_i => key_fraction_i,
-         phase_inc_o    => phase_inc_II_s
+         phase_inc_II_o => phase_inc_II_s
       ); -- i_calc_freq
-
-
-   -----------------------------------------------------------------------------
-   -- Store 32 states of phase, one for each slot.
-   -----------------------------------------------------------------------------
-
-   i_buffer_phase : entity work.ring_buffer
-      generic map (
-         G_WIDTH  => 20,
-         G_STAGES => 31
-      )
-      port map (
-         clk_i  => clk_i,
-         data_i => phase_III_r,
-         data_o => phase_II_s
-      ); -- i_buffer_phase
 
 
    -----------------------------------------------------------------------------
    -- Calculate new phase.
    -----------------------------------------------------------------------------
 
-   p_phase_III : process (clk_i)
-   begin
-      if rising_edge(clk_i) then
-         phase_III_r <= phase_II_s + phase_inc_II_s;
+   phase_II_s <= (others => '0') when rst_i = '1' else
+                 last_phase_II_s + phase_inc_II_s;
 
-         if rst_i = '1' then
-            phase_III_r <= (others => '0');
-         end if;
-      end if;
-   end process p_phase_III;
 
-   phase_III_o <= phase_III_r(19 downto 10);
+   -----------------------------------------------------------------------------
+   -- Store 32 states of phase, one for each slot.
+   -----------------------------------------------------------------------------
+
+   i_ring_buffer_phase : entity work.ring_buffer
+      generic map (
+         G_WIDTH  => 20,
+         G_STAGES => 32
+      )
+      port map (
+         clk_i  => clk_i,
+         data_i => phase_II_s,
+         data_o => last_phase_II_s
+      ); -- i_ring_buffer_phase
+
+
+   -----------------------------------------------------------------------------
+   -- Delay.
+   -----------------------------------------------------------------------------
+
+   i_ring_buffer_out : entity work.ring_buffer
+      generic map (
+         G_WIDTH  => 10,
+         G_STAGES => 1
+      )
+      port map (
+         clk_i  => clk_i,
+         data_i => phase_II_s(19 downto 10),
+         data_o => phase_III_o
+      ); -- i_ring_buffer_out
 
 end architecture synthesis;
 
