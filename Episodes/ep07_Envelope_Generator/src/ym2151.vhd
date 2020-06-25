@@ -47,11 +47,11 @@ architecture synthesis of ym2151 is
    signal sustain_level_s : std_logic_vector(3 downto 0);
    signal release_rate_s  : std_logic_vector(3 downto 0);
 
-   -- Output from Phase Generator
-   signal phase_III_s     : std_logic_vector(9 downto 0);
-
    -- Output from Envelope Generator
    signal atten_III_s     : std_logic_vector(9 downto 0);
+
+   -- Output from Phase Generator
+   signal phase_III_s     : std_logic_vector(9 downto 0);
 
    -- Output from Calc Sine
    signal sin_VI_s        : std_logic_vector(13 downto 0);
@@ -115,20 +115,6 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- Instantiate Phase Generator
-   -----------------------------------------------------------------------------
-
-   i_phase_generator : entity work.phase_generator
-      port map (
-         clk_i          => clk_int_r,
-         rst_i          => rst_int_r,
-         key_code_i     => key_code_s,
-         key_fraction_i => key_fraction_s,
-         phase_III_o    => phase_III_s
-      ); -- i_phase_generator
-
-
-   -----------------------------------------------------------------------------
    -- Instantiate Envelope Generator
    -----------------------------------------------------------------------------
 
@@ -147,6 +133,20 @@ begin
          release_rate_i  => release_rate_s,
          atten_III_o     => atten_III_s
       ); -- i_envelope_generator
+
+
+   -----------------------------------------------------------------------------
+   -- Instantiate Phase Generator
+   -----------------------------------------------------------------------------
+
+   i_phase_generator : entity work.phase_generator
+      port map (
+         clk_i          => clk_int_r,
+         rst_i          => rst_int_r,
+         key_code_i     => key_code_s,
+         key_fraction_i => key_fraction_s,
+         phase_III_o    => phase_III_s
+      ); -- i_phase_generator
 
 
    -----------------------------------------------------------------------------

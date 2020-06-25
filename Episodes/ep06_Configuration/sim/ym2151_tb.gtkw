@@ -1,32 +1,28 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed May 20 07:42:37 2020
+[*] Wed Jun 24 10:15:54 2020
 [*]
-[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep04_Accumulator/sim/build/ym2151_tb.fst"
-[dumpfile_mtime] "Wed May 20 07:42:29 2020"
-[dumpfile_size] 93798
-[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep04_Accumulator/sim/ym2151_tb.gtkw"
-[timestart] 15344510000000
-[size] 1806 762
-[pos] -1 -1
-*-31.741467 15347170000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] i_ym2151.
-[treeopen] i_ym2151.i_accumulator.
-[sst_width] 295
-[signals_width] 247
+[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep06_Configuration/sim/build/ym2151_tb.fst"
+[dumpfile_mtime] "Wed Jun 24 10:14:32 2020"
+[dumpfile_size] 69961
+[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep06_Configuration/sim/ym2151_tb.gtkw"
+[timestart] 0
+[size] 1245 792
+[pos] -246 -193
+*-35.274113 18200000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 344
+[signals_width] 180
 [sst_expanded] 1
-[sst_vpaned_height] 200
+[sst_vpaned_height] 210
+@28
+[color] 3
+i_ym2151.cfg_valid_i
+[color] 5
+i_ym2151.cfg_ready_o
+@22
+i_ym2151.cfg_addr_i[7:0]
+i_ym2151.cfg_data_i[7:0]
 @8022
 i_ym2151.wav_o[15:0]
-@800200
--accumulator
-@22
-i_ym2151.i_accumulator.slot_i[4:0]
-i_ym2151.i_accumulator.value_i[13:0]
-i_ym2151.i_accumulator.sum_r[15:0]
-@23
-i_ym2151.i_accumulator.wav_o[15:0]
-@1000200
--accumulator
 [pattern_trace] 1
 [pattern_trace] 0

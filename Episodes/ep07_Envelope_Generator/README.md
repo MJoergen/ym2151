@@ -174,51 +174,22 @@ ready signal for 63 of the fast clock cycles.
 
 ## Testing in simulation
 This episode has introduced a lot of new features, and that requires some work
-testing. In order to fascilitate automated testing, I have added some debug
-code to the YM2151 module, and a corresponding output signal deb\_atten0\_o
-that contains the current attenuation value of slot 0.
+testing.
 
-Furthermore, in the testbench I've added two timer modules that measure the
-total attack time (from 96 dB to 0 dB) and the total release time (from 0 dB
-to 96 dB) and output these two measurements to the console.
+In order to facilitate automated testing, I have added some debug code to the
+YM2151 module, and a corresponding output signal deb\_atten0\_o that contains
+the current attenuation value of slot 0.
 
-Finally, a small python script sim/atten.py contains a list of test cases and
-runs the simulation for each of them while capturing the console output.  The
-test cases vary the configuration parameters Attack Rate and Release Rate as
-well as the Key Code and Key Scaling parameters.
+In the testbench I've added the new procedure run\_test\_envelope.  This
+procedure monitors the current attenuation value of slot 0 and measures the
+time it takes to reach specific values.
 
-Running the script atten.py gives the following output.
+Furthermore, I've added a new file ym2151\_model\_pkg that contains a
+simplified simulation model of the YM2151.  Currently, it only contains a
+single function ym2151\_calcExpectedEnvelope that calculates the shape of the
+ADSR envelope from a given configuration.
 
-AR | RR |  KC  |  KS  | Rate | Attack | Rate | Release
----|----|------|------|------|--------|------|--------
-31 | 15 | 0x60 |  0   |   63 |      0 |   63 |   6848
-31 | 15 | 0x40 |  0   |   63 |      0 |   63 |   6848
-31 | 15 | 0x20 |  0   |   63 |      0 |   63 |   6848
-31 | 15 | 0x00 |  0   |   62 |    536 |   62 |   6848
-29 | 14 | 0x60 |  0   |   61 |    536 |   61 |   6848
-29 | 14 | 0x40 |  0   |   60 |    536 |   60 |   6848
-29 | 14 | 0x20 |  0   |   59 |    626 |   59 |   7831
-29 | 14 | 0x00 |  0   |   58 |    733 |   58 |   9118
-27 | 13 | 0x60 |  0   |   57 |    858 |   57 |  10942
-27 | 13 | 0x40 |  0   |   56 |   1073 |   56 |  13678
-27 | 13 | 0x20 |  0   |   55 |   1180 |   55 |  15644
-27 | 13 | 0x00 |  0   |   54 |   1395 |   54 |  18237
-25 | 12 | 0x60 |  0   |   53 |   1663 |   53 |  21884
-25 | 12 | 0x40 |  0   |   52 |   2092 |   52 |  27355
-25 | 12 | 0x20 |  0   |   51 |   2199 |   51 |  31271
-25 | 12 | 0x00 |  0   |   50 |   2575 |   50 |  36474
-23 | 11 | 0x60 |  0   |   49 |   3093 |   49 |  43769
-23 | 11 | 0x40 |  0   |   48 |   3862 |   48 |  54711
-23 | 11 | 0x20 |  0   |   47 |   4398 |   47 |  62542
-23 | 11 | 0x00 |  0   |   46 |   5149 |   46 |  72948
-21 | 10 | 0x60 |  0   |   45 |   6222 |   45 |  87537
-21 | 10 | 0x40 |  0   |   44 |   7724 |   44 | 109422
-21 | 10 | 0x20 |  0   |   43 |   8797 |   43 | 125066
-21 | 10 | 0x00 |  0   |   42 |  10299 |   42 | 145878
-25 | 11 | 0x20 |  1   |   52 |   2092 |   48 |  54711
-25 | 11 | 0x20 |  2   |   54 |   1395 |   50 |  36474
-25 | 11 | 0x20 |  3   |   58 |    733 |   54 |  18237
-
+Using the above function it is relatively easy to write a test procedure.
 
 ## Testing in hardware
 I've added a little happy tune "Ievan Polkka", which will be played when the

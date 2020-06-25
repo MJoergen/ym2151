@@ -103,6 +103,7 @@ begin
 
 
    bit_o <= '1' when rate_i(5 downto 2) = "1111" else
+            '0' when rate_i(5 downto 1) = "00000" else
             pattern_s(to_integer(counter_slice_s));
 
 

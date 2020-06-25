@@ -2,8 +2,8 @@
 -- License: Public domain; do with it what you like :-)
 -- Project: YM2151 implementation
 --
--- Description: This module stores the configuration for each of the 32 slots.
--- (using the configuraton interface at the fast clock rate.
+-- Description: This module stores the configuration for each of the 32 slots,
+-- using the configuraton interface at the fast clock rate.
 -- 
 -- At each (slow) clock cycle it outputs the slot number and the corresponding
 -- configuration for that slot.
