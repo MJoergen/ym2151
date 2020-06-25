@@ -46,6 +46,8 @@ architecture synthesis of envelope_generator is
 
    signal state_s                  : std_logic_vector(1 downto 0);
    signal atten_s                  : std_logic_vector(9 downto 0);
+   signal atten_tl_s               : std_logic_vector(9 downto 0);
+   signal atten_final_s            : std_logic_vector(9 downto 0);
 
    constant C_ATTACK_ST            : std_logic_vector(1 downto 0) := "00";
    constant C_DECAY_ST             : std_logic_vector(1 downto 0) := "01";
@@ -160,7 +162,7 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- Calculate new attenuation.
+   -- Calculate new envelope attenuation.
    -----------------------------------------------------------------------------
 
    update_s <= (last_lsb_s xor lsb_s) and bit_s;
@@ -177,6 +179,23 @@ begin
 
 
    -----------------------------------------------------------------------------
+   -- Calculate final attenuation.
+   -----------------------------------------------------------------------------
+
+   atten_tl_s <= total_level_i & "000";
+
+   i_saturated_sum_unsigned : entity work.saturated_sum_unsigned
+      generic map (
+         G_WIDTH => 10
+      )
+      port map (
+         arg1_i => atten_s,
+         arg2_i => atten_tl_s,
+         sum_o  => atten_final_s
+      ); -- i_saturated_sum_unsigned
+
+
+   -----------------------------------------------------------------------------
    -- 3 clock cycle delay
    -----------------------------------------------------------------------------
 
@@ -187,7 +206,7 @@ begin
       )
       port map (
          clk_i  => clk_i,
-         data_i => atten_s,
+         data_i => atten_final_s,
          data_o => atten_III_o 
       ); -- i_ring_buffer_output
 
