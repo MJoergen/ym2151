@@ -23,7 +23,7 @@ end entity saturated_sum_signed;
 architecture synthesis of saturated_sum_signed is
 
    signal sum_s       : std_logic_vector(G_WIDTH downto 0);
-   signal saturated_s : std_logic_vector(G_WIDTH downto 0);
+   signal saturated_s : std_logic_vector(G_WIDTH-1 downto 0);
 
 begin
 
@@ -31,13 +31,12 @@ begin
    sum_s <= (arg1_i(G_WIDTH-1) & arg1_i) + (arg2_i(G_WIDTH-1) & arg2_i);
 
    -- Calculate the saturated value
-   saturated_s(G_WIDTH)            <= sum_s(G_WIDTH);
    saturated_s(G_WIDTH-1)          <= sum_s(G_WIDTH);
    saturated_s(G_WIDTH-2 downto 0) <= (others => not sum_s(G_WIDTH));
 
    -- Generate output depending on overflow or not
    sum_o <= sum_s(G_WIDTH-1 downto 0) when sum_s(G_WIDTH) = sum_s(G_WIDTH-1) else
-            saturated_s(G_WIDTH-1 downto 0);
+            saturated_s;
 
 end architecture synthesis;
 
