@@ -1,0 +1,75 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Wed Jun 24 09:44:27 2020
+[*]
+[dumpfile] "/home/mike/git/MJoergen/ym2151/Episodes/ep07_Envelope_Generator/sim/build/ym2151_tb.fst"
+[dumpfile_mtime] "Wed Jun 24 09:44:14 2020"
+[dumpfile_size] 1530993
+[savefile] "/home/mike/git/MJoergen/ym2151/Episodes/ep07_Envelope_Generator/sim/ym2151_tb.gtkw"
+[timestart] 0
+[size] 1554 990
+[pos] 0 16
+*-46.164799 491123872170 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] i_ym2151.
+[treeopen] i_ym2151.i_envelope_generator.
+[sst_width] 420
+[signals_width] 277
+[sst_expanded] 1
+[sst_vpaned_height] 279
+@28
+[color] 3
+i_ym2151.cfg_valid_i
+[color] 5
+i_ym2151.cfg_ready_o
+@22
+i_ym2151.cfg_addr_i[7:0]
+i_ym2151.cfg_data_i[7:0]
+@c08022
+i_ym2151.deb_atten0_o[9:0]
+@28
+(0)i_ym2151.deb_atten0_o[9:0]
+(1)i_ym2151.deb_atten0_o[9:0]
+(2)i_ym2151.deb_atten0_o[9:0]
+(3)i_ym2151.deb_atten0_o[9:0]
+(4)i_ym2151.deb_atten0_o[9:0]
+(5)i_ym2151.deb_atten0_o[9:0]
+(6)i_ym2151.deb_atten0_o[9:0]
+(7)i_ym2151.deb_atten0_o[9:0]
+(8)i_ym2151.deb_atten0_o[9:0]
+(9)i_ym2151.deb_atten0_o[9:0]
+@1401200
+-group_end
+@8022
+i_ym2151.wav_o[15:0]
+@800200
+-EG
+@28
+i_ym2151.i_envelope_generator.keyon_i
+@22
+i_ym2151.i_envelope_generator.key_code_i[6:0]
+@28
+i_ym2151.i_envelope_generator.key_scale_i[1:0]
+@22
+i_ym2151.i_envelope_generator.attack_rate_i[4:0]
+i_ym2151.i_envelope_generator.decay_rate_i[4:0]
+i_ym2151.i_envelope_generator.sustain_rate_i[4:0]
+i_ym2151.i_envelope_generator.release_rate_i[3:0]
+i_ym2151.i_envelope_generator.sustain_level_i[3:0]
+i_ym2151.i_envelope_generator.total_level_i[6:0]
+i_ym2151.i_envelope_generator.rate_s[5:0]
+@28
+i_ym2151.i_envelope_generator.state_s[1:0]
+@1000200
+-EG
+@800200
+-eg_timing
+@22
+i_ym2151.i_envelope_generator.i_eg_timing.rate_i[5:0]
+@28
+i_ym2151.i_envelope_generator.i_eg_timing.lsb_o
+i_ym2151.i_envelope_generator.i_eg_timing.bit_o
+i_ym2151.i_envelope_generator.i_eg_timing.shifts_o
+@1000200
+-eg_timing
+[pattern_trace] 1
+[pattern_trace] 0
