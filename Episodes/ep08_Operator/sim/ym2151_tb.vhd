@@ -3,7 +3,8 @@
 -- Project: YM2151 implementation
 --
 -- Description: This module is a test bench for the YM2151 module.
--- It tests the envelope generation.
+-- It tests the different operator connection modes and the envelope
+-- generation.
 
 use std.env.finish;
 
@@ -32,6 +33,40 @@ architecture simulation of ym2151_tb is
 
    signal wav2file_active_s : std_logic := '1';
 
+   type verify_p is protected
+      procedure reset;
+      procedure test(observed : integer; expected : integer; step : integer);
+   end protected verify_p;
+
+   type verify_p is protected body
+      variable maxabsdiff_v : integer := 0;
+
+      procedure reset is
+      begin
+         maxabsdiff_v := 0;
+      end procedure reset;
+
+      procedure test(observed : integer; expected : integer; step : integer) is
+         variable absdiff_v : integer;
+      begin
+         absdiff_v := observed - expected;
+
+         if absdiff_v < 0 then
+            absdiff_v := -absdiff_v;
+         end if;
+
+         if absdiff_v > maxabsdiff_v then
+            report "step=" & integer'image(step)
+               & ", observed=0x" & to_hstring(to_stdlogicvector(observed, 16))
+               & ", expected=0x" & to_hstring(to_stdlogicvector(expected, 16))
+               & ", absdiff=0x"  & to_hstring(to_stdlogicvector(absdiff_v, 16));
+            maxabsdiff_v := absdiff_v;
+         end if;
+      end procedure test;
+   end protected body verify_p;
+
+   shared variable verify_wav : verify_p;
+
 begin
 
    -----------------------------------------------------------------------------
@@ -58,6 +93,44 @@ begin
    -----------------------------------------------------------------------------
 
    p_test : process
+
+      -- Test waveform generation.
+      procedure run_test_waveform(config : inout config_t;
+                                  steps  : integer) is
+
+         variable expected : integer;
+      begin
+         report "OP: mode=" & integer'image(config.mode) & ", "
+            & integer'image(steps) & " steps.";
+
+         ym2151_write_config(config, clk_s, ym2151_s);
+         wait until clk_s = '1';
+         wait until clk_s = '1';
+         wait until clk_s = '1';
+
+         verify_wav.reset;
+
+         -- Read waveform and compare with expected
+         for step in 0 to steps loop
+
+            ym2151_calcExpectedWaveform(step, config, expected);
+
+            -- Verify wave output
+            verify_wav.test(to_integer(ym2151_s.wav), expected, step);
+
+            -- Skip 64 clock cycles.
+            for c in 0 to 63 loop
+               wait until clk_s = '1';
+            end loop;
+         end loop;
+
+         -- Key OFF to all operators
+         wait until clk_s = '1';
+         ym2151_write(X"08", X"00", clk_s, ym2151_s);
+         wait for 7 ms;
+         wait until clk_s = '1';
+
+      end procedure run_test_waveform;
 
       -- Measure time until attenuation reaches specific level.
       procedure verify_attenuation_time(name  : string;
@@ -115,60 +188,25 @@ begin
 
       end procedure run_test_envelope;
 
-      -- This measures the period of the output wave and compares with the expected value.
-      procedure run_test_frequency(config : config_t) is
-
-         variable last_wav         : std_logic_vector(15 downto 0) := (others => '0');
-         variable last_step        : integer := 0;
-         variable expected_freq    : real;
-         variable observed_samples : integer;
-         variable expected_samples : integer;
-         variable max_diff         : integer;
-
-         function calc_freq(config : config_t) return real is
-            variable key_note : integer;
-         begin
-            key_note := (config.kc - config.kc/4)*64 + config.kf;
-            return 440.0 * 2.0**(real(key_note-3584)/768.0);
-         end function calc_freq;
-
-      begin
-
-         report "KC=" & integer'image(config.kc)
-            & ", KF=" & integer'image(config.kf);
-
-         ym2151_write_config(config, clk_s, ym2151_s);
-
-         expected_freq    := calc_freq(config);
-         expected_samples := integer(3579545.0/64.0/expected_freq);
-
-         for step in 0 to 5*expected_samples loop
-            if last_wav(15) = '0' and ym2151_s.wav(15) = '1' then
-               if last_step /= 0 then
-                  observed_samples := step - last_step;
-                  max_diff := 1 + expected_samples / 1000; -- Allow error of 0.1%.
-                  if observed_samples < expected_samples-max_diff or
-                     observed_samples > expected_samples+max_diff then
-                        report "observed_samples: " & integer'image(observed_samples)
-                           & ", expected_samples: " & integer'image(expected_samples);
-                  end if;
-               end if;
-               last_step := step;
-            end if;
-
-            last_wav := ym2151_s.wav;
-            for c in 0 to 63 loop
-               wait until clk_s = '1';
-            end loop;
-         end loop;
-
-      end procedure run_test_frequency;
-
       variable config : config_t := C_CONFIG_DEFAULT;
 
    begin
       wait until clk_s = '1' and rst_s = '0';
       wait until clk_s = '1';
+
+      -- Test all operator modes
+      for mode in 0 to 7 loop
+         config            := C_CONFIG_DEFAULT;
+         config.mode       := mode;
+         config.fb         := mode;
+         config.kc         := 16#2A#;
+         config.oper_m1.tl := 8;
+         config.oper_c1.tl := 0;
+         config.oper_m2.tl := 24;
+         config.oper_c2.tl := 16;
+         run_test_waveform(config, 1000);
+      end loop;
+
 
       -- Test fast envelope
       config            := C_CONFIG_DEFAULT;
@@ -211,23 +249,6 @@ begin
       config.kc := 64; run_test_envelope(config, 768);
       config.kc := 96; run_test_envelope(config, 768);
 
-      -- Test sine frequency
-      config := C_CONFIG_DEFAULT;
-      config.oper_m1.tl := 0;
-
-      config.kc := 16#1A#;
-      config.kf :=  0; run_test_frequency(config);
-      config.kf := 16; run_test_frequency(config);
-      config.kf := 32; run_test_frequency(config);
-      config.kf := 48; run_test_frequency(config);
-      config.kf := 63; run_test_frequency(config);
-
-      config.kc := 16#30#;
-      config.kf :=  0; run_test_frequency(config);
-      config.kf := 16; run_test_frequency(config);
-      config.kf := 32; run_test_frequency(config);
-      config.kf := 48; run_test_frequency(config);
-      config.kf := 63; run_test_frequency(config);
 
       -- Stop test
       wav2file_active_s <= '0';
@@ -259,7 +280,7 @@ begin
    
 
    -----------------------------------------------------------------------------
-   -- Write waveform to file
+   -- Write waveform to file.
    -----------------------------------------------------------------------------
 
    i_wav2file : entity work.wav2file

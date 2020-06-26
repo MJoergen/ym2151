@@ -8,7 +8,7 @@
 -- attenuation level in units of 1/64'th powers of 0.5, i.e. a unit of
 -- 6/64 dB = 93.75 mdB.
 --
--- Latency: 2 clock cycles.
+-- Latency: 8 clock cycles.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -16,18 +16,19 @@ use ieee.numeric_std_unsigned.all;
 
 entity envelope_generator is
    port (
-      clk_i           : in  std_logic;
-      rst_i           : in  std_logic;
-      keyon_i         : in  std_logic;
-      key_code_i      : in  std_logic_vector(6 downto 0);
-      key_scale_i     : in  std_logic_vector(1 downto 0);
-      total_level_i   : in  std_logic_vector(6 downto 0);   -- Units of 0.75 dB.
-      attack_rate_i   : in  std_logic_vector(4 downto 0);
-      decay_rate_i    : in  std_logic_vector(4 downto 0);
-      sustain_rate_i  : in  std_logic_vector(4 downto 0);
-      sustain_level_i : in  std_logic_vector(3 downto 0);   -- Units of 3 dB.
-      release_rate_i  : in  std_logic_vector(3 downto 0);
-      atten_II_o      : out std_logic_vector(9 downto 0)
+      clk_i            : in  std_logic;
+      rst_i            : in  std_logic;
+      keyon_i          : in  std_logic;
+      key_code_i       : in  std_logic_vector(6 downto 0);
+      key_scale_i      : in  std_logic_vector(1 downto 0);
+      total_level_i    : in  std_logic_vector(6 downto 0);   -- Units of 0.75 dB.
+      attack_rate_i    : in  std_logic_vector(4 downto 0);
+      decay_rate_i     : in  std_logic_vector(4 downto 0);
+      sustain_rate_i   : in  std_logic_vector(4 downto 0);
+      sustain_level_i  : in  std_logic_vector(3 downto 0);   -- Units of 3 dB.
+      release_rate_i   : in  std_logic_vector(3 downto 0);
+      phase_rst_o      : out std_logic;
+      atten_VIII_o     : out std_logic_vector(9 downto 0)
    );
 end entity envelope_generator;
 
@@ -72,6 +73,8 @@ begin
          data_o => last_state_s
       ); -- i_ring_buffer_state
 
+   phase_rst_o <= '1' when state_s = C_ATTACK_ST and last_state_s /= C_ATTACK_ST else
+                  '0';
 
    -----------------------------------------------------------------------------
    -- Remember last attenuation.
@@ -196,18 +199,18 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- 2 clock cycle delay
+   -- 8 clock cycle delay
    -----------------------------------------------------------------------------
 
    i_ring_buffer_output : entity work.ring_buffer
       generic map (
          G_WIDTH    => 10,
-         G_STAGES   => 2
+         G_STAGES   => 8
       )
       port map (
          clk_i  => clk_i,
          data_i => atten_final_s,
-         data_o => atten_II_o 
+         data_o => atten_VIII_o
       ); -- i_ring_buffer_output
 
 end architecture synthesis;

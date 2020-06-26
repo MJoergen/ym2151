@@ -21,12 +21,327 @@ package ym2151_model_pkg is
       release_time  : integer; -- Number of samples
    end record ym2151_envelope_t;
 
+   type ym2151_state_t is record
+      phase   : integer;
+      m1      : integer;
+      m1_prev : integer;
+   end record ym2151_state_t;
+
+   -- Calculate the expected output 'step' number of steps after Key ON, based on the supplied configuration.
+   -- This procedure maintains state in the config variable.
+   procedure ym2151_calcExpectedWaveform(step     : integer;
+                                         config   : inout config_t;
+                                         expected : out integer);
+
    function ym2151_calcExpectedEnvelope(config        : config_t;
                                         release_level : integer) return ym2151_envelope_t;
+
+   function string_ph(ph   : integer) return string;
+   function string_out(val : integer) return string;
 
 end package ym2151_model_pkg;
 
 package body ym2151_model_pkg is
+
+   function string_ph(ph : integer) return string is
+   begin
+      return to_hstring(to_stdlogicvector(ph mod 1024, 10));
+   end function;
+
+   function string_out(val : integer) return string is
+   begin
+      return to_hstring(to_stdlogicvector(val, 16));
+   end function;
+
+   procedure ym2151_calcExpectedWaveform(step : integer; config : inout config_t; expected : out integer) is
+
+      constant C_TWO_PI    : real := 2.0 * 3.1415926535897932384626433832795;
+      constant C_FREQ      : real := 110.0;  -- determined from key code.
+      constant C_PHASE_INC : integer := integer(1048576.0*64.0/3579545.0*C_FREQ);
+
+      -- This is the main funtion that (approximately) calculates
+      -- 0.5^(tl/8) * sin(2*pi*ph/1024).
+      -- This function gives results identical to the YM2151.
+      function operator(ph : integer; tl : integer) return integer is
+         variable tmp    : real;
+         variable sgn    : real;
+         variable logsin : integer;
+         variable res    : real;
+         variable exp    : real;
+      begin
+         tmp    := sin((real(ph)+0.5)/1024.0*C_TWO_PI);
+         sgn    := tmp;
+         tmp    := log(abs(tmp))/log(0.5);
+         logsin := integer(round(tmp*256.0));
+
+         tmp := real(logsin+1)/256.0 + real(tl)/8.0;
+         exp := floor(tmp);
+         tmp := tmp - exp;
+
+         tmp := 0.5**tmp;
+         tmp := round(tmp*2048.0)/2048.0;
+         tmp := tmp * 0.5**exp;
+         if sgn < 0.0 then
+            tmp := -tmp;
+         end if;
+
+         res := tmp / 8.0;
+
+         if res > 0.0 then
+            return integer(floor(res*65536.0));
+         else
+            return (65536+integer(ceil(res*65536.0))) mod 65536;
+         end if;
+         return 0;
+      end function operator;
+
+      variable phase_v       : integer;
+      variable phase_prev_v  : integer;
+      variable phase_prev2_v : integer;
+      variable phase_prev3_v : integer;
+      variable ph_m1_v       : integer;
+      variable ph_m2_v       : integer;
+      variable ph_c1_v       : integer;
+      variable ph_c2_v       : integer;
+      variable out_m1_v      : integer;
+      variable out_m2_v      : integer;
+      variable out_c1_v      : integer;
+      variable out_c2_v      : integer;
+      variable out_v         : integer;
+      variable sum_v         : integer;
+
+   begin
+      out_v         := 0;
+      phase_v       := (C_PHASE_INC * step) / 1024;
+      phase_prev_v  := (C_PHASE_INC * (step-1)) / 1024;
+      phase_prev2_v := (C_PHASE_INC * (step-2)) / 1024;
+      phase_prev3_v := (C_PHASE_INC * (step-3)) / 1024;
+
+      -- Handle feedback (M1 only).
+      sum_v := 0;
+      if step>0 then
+         sum_v := config.out_m1_prev;
+      end if;
+      if step>1 then
+         sum_v := config.out_m1_prev + config.out_m1_prev2;
+      end if;
+      if sum_v >= 32768 then
+         sum_v := sum_v - 65536;
+      end if;
+      if sum_v >= 32768 then
+         sum_v := sum_v - 65536;
+      end if;
+      case config.fb is
+         when 0 => ph_m1_v := phase_v;
+         when 1 => ph_m1_v := phase_v + sum_v/512; if sum_v < 0 and sum_v mod 512 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 2 => ph_m1_v := phase_v + sum_v/256; if sum_v < 0 and sum_v mod 256 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 3 => ph_m1_v := phase_v + sum_v/128; if sum_v < 0 and sum_v mod 128 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 4 => ph_m1_v := phase_v + sum_v/64;  if sum_v < 0 and sum_v mod  64 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 5 => ph_m1_v := phase_v + sum_v/32;  if sum_v < 0 and sum_v mod  32 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 6 => ph_m1_v := phase_v + sum_v/16;  if sum_v < 0 and sum_v mod  16 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 7 => ph_m1_v := phase_v + sum_v/8;   if sum_v < 0 and sum_v mod   8 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when others => ph_m1_v := phase_v;
+      end case;
+      out_m1_v := operator(ph_m1_v, config.oper_m1.tl);
+
+      case config.mode is
+         when 0 => -- C2(M2(C1(M1)))
+            ph_c1_v     := phase_prev2_v;
+            if step > 2 then
+               ph_c1_v  := ph_c1_v + config.out_m1_prev3/2;
+            end if;
+            out_c1_v    := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_m2_v     := phase_prev_v;
+            if step > 1 then
+               ph_m2_v  := ph_m2_v + out_c1_v/2;
+            end if;
+            out_m2_v    := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c2_v     := phase_prev_v;
+            if step > 0 then
+               ph_c2_v  := ph_c2_v + out_m2_v/2;
+            end if;
+            out_c2_v    := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := out_c2_v;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 1 => -- C2(M2(C1+M1))
+            ph_c1_v     := phase_prev2_v;
+            out_c1_v    := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_m2_v     := phase_prev_v;
+            if step > 1 then
+               ph_m2_v  := ph_m2_v + (config.out_m1_prev2 + out_c1_v)/2;
+            end if;
+            out_m2_v    := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c2_v     := phase_prev_v;
+            if step > 0 then
+               ph_c2_v  := ph_c2_v + out_m2_v/2;
+            end if;
+            out_c2_v    := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := out_c2_v;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 2 => -- C2(M2(C1)+M1)
+            ph_c1_v     := phase_prev2_v;
+            out_c1_v    := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_m2_v     := phase_prev_v;
+            if step > 1 then
+               ph_m2_v  := ph_m2_v + out_c1_v/2;
+            end if;
+            out_m2_v    := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c2_v     := phase_prev_v;
+            if step > 0 then
+               ph_c2_v  := phase_prev_v + config.out_m1_prev/2;
+            end if;
+            if step > 0 then
+               ph_c2_v  := phase_prev_v + (out_m2_v + config.out_m1_prev)/2;
+            end if;
+            out_c2_v    := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := out_c2_v;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 3 => -- C2(M2+C1(M1))
+            ph_m2_v     := phase_prev_v;
+            out_m2_v    := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c1_v     := phase_prev2_v;
+            if step > 2 then
+               ph_c1_v  := ph_c1_v + config.out_m1_prev3/2;
+            end if;
+            out_c1_v    := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_c2_v     := phase_prev_v;
+            if step > 0 then
+               ph_c2_v  := phase_prev_v + out_m2_v/2;
+            end if;
+            if step > 1 then
+               ph_c2_v  := phase_prev_v + (out_m2_v + out_c1_v)/2;
+            end if;
+            out_c2_v    := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := out_c2_v;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 4 => -- C2(M2)+C1(M1)
+            ph_m2_v     := phase_prev_v;
+            out_m2_v    := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c1_v     := phase_prev_v;
+            if step > 1 then
+               ph_c1_v  := ph_c1_v + config.out_m1_prev2 / 2;
+            end if;
+            out_c1_v    := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_c2_v     := phase_prev_v;
+            if step > 0 then
+               ph_c2_v  := ph_c2_v + out_m2_v / 2;
+            end if;
+            out_c2_v    := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := (out_c1_v + out_c2_v) mod 65536;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 5 => -- C2(M1)+M2(M1)+C1(M1)
+            ph_m2_v     := phase_prev_v;
+            if step > 2 then
+               ph_m2_v  := ph_m2_v + config.out_m1_prev3 / 2;
+            end if;
+            out_m2_v    := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c1_v     := phase_prev_v;
+            if step > 1 then
+               ph_c1_v  := ph_c1_v + config.out_m1_prev2 / 2;
+            end if;
+            out_c1_v    := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_c2_v     := phase_prev_v;
+            if step > 0 then
+               ph_c2_v  := ph_c2_v + config.out_m1_prev / 2;
+            end if;
+            out_c2_v    := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := (out_m2_v + out_c1_v + out_c2_v) mod 65536;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 6 => -- C2+M2+C1(M1)
+            ph_m2_v    := phase_prev_v;
+            out_m2_v   := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c1_v    := phase_prev_v;
+            if step>1 then
+               ph_c1_v := ph_c1_v + config.out_m1_prev2/2;
+            end if;
+            out_c1_v   := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_c2_v    := phase_prev_v;
+            out_c2_v   := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := (out_m2_v + out_c1_v + out_c2_v) mod 65536;
+            if step = 0 then
+               out_v := 0;
+            end if;
+
+         when 7 => -- C2+M2+C1+M1
+            ph_m2_v  := phase_prev_v;
+            out_m2_v := operator(ph_m2_v, config.oper_m2.tl);
+
+            ph_c1_v  := phase_prev_v;
+            out_c1_v := operator(ph_c1_v, config.oper_c1.tl);
+
+            ph_c2_v  := phase_prev_v;
+            out_c2_v := operator(ph_c2_v, config.oper_c2.tl);
+
+            out_v := (out_m1_v + out_m2_v + out_c1_v + out_c2_v) mod 65536;
+            if step = 0 then
+               out_v := out_m1_v;
+            end if;
+
+         when others => null;
+      end case;
+
+--      report "phase_v="      & string_ph(phase_v)
+--         & ", out_m1_prev="  & string_out(config.out_m1_prev)
+--         & ", out_m1_prev2=" & string_out(config.out_m1_prev2)
+--         & ", ph_m1_v="      & string_ph(ph_m1_v)
+--         & ", out_m1_v="     & string_out(out_m1_v)
+--         & ", ph_m2_v="      & string_ph(ph_m2_v)
+--         & ", out_m2_v="     & string_out(out_m2_v)
+--         & ", ph_c1_v="      & string_ph(ph_c1_v)
+--         & ", out_c1_v="     & string_out(out_c1_v)
+--         & ", ph_c2_v="      & string_ph(ph_c2_v)
+--         & ", out_c2_v="     & string_out(out_c2_v)
+--         & ", out_v="        & string_out(out_v);
+
+      -- Update state information.
+      config.ph_m1_prev3  := config.ph_m1_prev2;
+      config.ph_m1_prev2  := config.ph_m1_prev;
+      config.ph_m1_prev   := ph_m1_v;
+      config.out_m1_prev3 := config.out_m1_prev2;
+      config.out_m1_prev2 := config.out_m1_prev;
+      config.out_m1_prev  := out_m1_v;
+
+      expected := (out_v + 16#8000#) mod 65536;
+   end procedure ym2151_calcExpectedWaveform;
 
    -- This function approximately models the peculiar way the YM2151 implements
    -- the envelope generation.

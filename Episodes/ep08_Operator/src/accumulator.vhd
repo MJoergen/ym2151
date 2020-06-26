@@ -14,6 +14,7 @@ entity accumulator is
       rst_i   : in  std_logic;
  
       slot_i  : in  std_logic_vector(4 downto 0);
+      con_i   : in  std_logic_vector(2 downto 0);
       value_i : in  std_logic_vector(13 downto 0);
 
       wav_o   : out std_logic_vector(15 downto 0)
@@ -21,6 +22,11 @@ entity accumulator is
 end entity accumulator;
 
 architecture synthesis of accumulator is
+
+   constant C_OP_M1  : std_logic_vector(1 downto 0) := "00";
+   constant C_OP_M2  : std_logic_vector(1 downto 0) := "01";
+   constant C_OP_C1  : std_logic_vector(1 downto 0) := "10";
+   constant C_OP_C2  : std_logic_vector(1 downto 0) := "11";
 
    constant C_OFFSET : std_logic_vector(15 downto 0) := X"8000";
 
@@ -52,9 +58,63 @@ begin
    p_sum : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         sum_r <= sum_s;
+         case slot_i(4 downto 3) is
+            when C_OP_M1 =>
+               case to_integer(con_i) is
+                  when 0 => null;
+                  when 1 => null;
+                  when 2 => null;
+                  when 3 => null;
+                  when 4 => null;
+                  when 5 => null;
+                  when 6 => null;
+                  when 7 => sum_r <= sum_s;
+                  when others => null;
+               end case;
 
-         if slot_i = 31 then
+            when C_OP_M2 =>
+               case to_integer(con_i) is
+                  when 0 => null;
+                  when 1 => null;
+                  when 2 => null;
+                  when 3 => null;
+                  when 4 => null;
+                  when 5 => sum_r <= sum_s;
+                  when 6 => sum_r <= sum_s;
+                  when 7 => sum_r <= sum_s;
+                  when others => null;
+               end case;
+
+            when C_OP_C1 =>
+               case to_integer(con_i) is
+                  when 0 => null;
+                  when 1 => null;
+                  when 2 => null;
+                  when 3 => null;
+                  when 4 => sum_r <= sum_s;
+                  when 5 => sum_r <= sum_s;
+                  when 6 => sum_r <= sum_s;
+                  when 7 => sum_r <= sum_s;
+                  when others => null;
+               end case;
+
+            when C_OP_C2 =>
+               case to_integer(con_i) is
+                  when 0 => sum_r <= sum_s;
+                  when 1 => sum_r <= sum_s;
+                  when 2 => sum_r <= sum_s;
+                  when 3 => sum_r <= sum_s;
+                  when 4 => sum_r <= sum_s;
+                  when 5 => sum_r <= sum_s;
+                  when 6 => sum_r <= sum_s;
+                  when 7 => sum_r <= sum_s;
+                  when others => null;
+               end case;
+
+            when others => null;
+         end case;
+
+         if slot_i = 7 then -- 7 (rather than 31) matches the YM2151.
             sample_r <= sum_s;
             sum_r    <= (others => '0');
          end if;

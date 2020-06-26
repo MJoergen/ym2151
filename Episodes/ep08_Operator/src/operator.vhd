@@ -15,7 +15,7 @@
 -- The input atten_i is interpreted as an unsigned value from 0 to 16 with 4
 -- integer bits and 6 fractional bits.
 --
--- Latency is 3 clock cycles.
+-- Latency is 8 clock cycles.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -23,48 +23,76 @@ use ieee.numeric_std_unsigned.all;
 
 entity operator is
    port (
-      clk_i     : in  std_logic;
-      phase_i   : in  std_logic_vector(9 downto 0);
-      atten_i   : in  std_logic_vector(9 downto 0);
-      sin_III_o : out std_logic_vector(13 downto 0)
+      clk_i           : in  std_logic;
+      op_i            : in  std_logic_vector(1 downto 0); -- Current operator number
+      con_i           : in  std_logic_vector(2 downto 0); -- Connection mode
+      feedback_i      : in  std_logic_vector(2 downto 0); -- M1 feedback
+      phase_VIII_i    : in  std_logic_vector(9 downto 0);
+      atten_VIII_i    : in  std_logic_vector(9 downto 0);
+      val_XVI_o       : out std_logic_vector(13 downto 0)
    );
 end entity operator;
 
 architecture synthesis of operator is
 
+   constant C_OP_M1         : std_logic_vector(1 downto 0) := "00";
+   constant C_OP_M2         : std_logic_vector(1 downto 0) := "01";
+   constant C_OP_C1         : std_logic_vector(1 downto 0) := "10";
+   constant C_OP_C2         : std_logic_vector(1 downto 0) := "11";
+
+   signal phase_mod_VIII_s  : std_logic_vector(9 downto 0);
+   signal phase_VIII_s      : std_logic_vector(9 downto 0);
+
    -- Stage 0
-   signal sign_s        : std_logic;
-   signal phase_quad_s  : std_logic_vector(7 downto 0);
+   signal sign_VIII_s       : std_logic;
+   signal phase_quad_VIII_s : std_logic_vector(7 downto 0);
 
    -- Stage 1
-   signal sign_I_r      : std_logic;
-   signal atten_I_r     : std_logic_vector(11 downto 0);
-   signal logsin_I_s    : std_logic_vector(11 downto 0);
-   signal logout_I_s    : std_logic_vector(11 downto 0);
+   signal sign_IX_r         : std_logic;
+   signal atten_IX_r        : std_logic_vector(11 downto 0);
+   signal logsin_IX_s       : std_logic_vector(11 downto 0);
+   signal logout_IX_s       : std_logic_vector(11 downto 0);
 
    -- Stage 2
-   signal sign_II_r     : std_logic;
-   signal exponent_II_r : std_logic_vector(3 downto 0);
-   signal mantissa_II_s : std_logic_vector(10 downto 0);
+   signal sign_X_r          : std_logic;
+   signal exponent_X_r      : std_logic_vector(3 downto 0);
+   signal mantissa_X_s      : std_logic_vector(10 downto 0);
 
    -- Stage 3
-   signal sin_III_s     : std_logic_vector(13 downto 0);
+   signal sin_XI_s          : std_logic_vector(13 downto 0);
 
 begin
+
+   ----------------------------------------------------
+   -- Calculate phase modification based on current operator.
+   ----------------------------------------------------
+
+   i_phase_mod : entity work.phase_mod
+      port map (
+         clk_i            => clk_i,
+         val_XVI_i        => val_XVI_o,
+         op_i             => op_i,
+         con_i            => con_i,
+         feedback_i       => feedback_i,
+         phase_mod_VIII_o => phase_mod_VIII_s
+      ); -- i_phase_mod
+
+   phase_VIII_s <= phase_VIII_i + phase_mod_VIII_s;
+
 
    ----------------------------------------------------
    -- Stage 0
    ----------------------------------------------------
 
    -- This maps the phase into the first quadrant, together with a sign bit.
-   p_phase_quad : process (phase_i)
+   p_phase_quad : process (all)
    begin
-      sign_s <= phase_i(9);
+      sign_VIII_s <= phase_VIII_s(9);
 
-      if phase_i(8) = '0' then
-         phase_quad_s <= phase_i(7 downto 0);
+      if phase_VIII_s(8) = '0' then
+         phase_quad_VIII_s <= phase_VIII_s(7 downto 0);
       else
-         phase_quad_s <= not phase_i(7 downto 0);
+         phase_quad_VIII_s <= not phase_VIII_s(7 downto 0);
       end if;
    end process p_phase_quad;
 
@@ -75,16 +103,16 @@ begin
 
    p_stage1 : process (clk_i) begin
       if rising_edge(clk_i) then
-         sign_I_r  <= sign_s;
-         atten_I_r <= atten_i & "00"; -- Shift atten_i to 8 fractional bits.
+         sign_IX_r  <= sign_VIII_s;
+         atten_IX_r <= atten_VIII_i & "00"; -- Shift atten_i to 8 fractional bits.
       end if;
    end process p_stage1;
 
    i_rom_logsin : entity work.rom_logsin
       port map (
          clk_i  => clk_i,
-         addr_i => phase_quad_s,
-         data_o => logsin_I_s
+         addr_i => phase_quad_VIII_s,
+         data_o => logsin_IX_s
       ); -- i_rom_logsin
 
    -- Perform the attenuation
@@ -93,9 +121,9 @@ begin
          G_WIDTH => 12
       )
       port map (
-         arg1_i => logsin_I_s,
-         arg2_i => atten_I_r,
-         sum_o  => logout_I_s
+         arg1_i => logsin_IX_s,
+         arg2_i => atten_IX_r,
+         sum_o  => logout_IX_s
       ); -- i_satured_sum
 
 
@@ -106,16 +134,16 @@ begin
    p_stage2 : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         sign_II_r     <= sign_I_r;
-         exponent_II_r <= logout_I_s(11 downto 8);
+         sign_X_r     <= sign_IX_r;
+         exponent_X_r <= logout_IX_s(11 downto 8);
       end if;
    end process p_stage2;
 
    i_rom_exp : entity work.rom_exp
       port map (
          clk_i  => clk_i,
-         addr_i => logout_I_s(7 downto 0),
-         data_o => mantissa_II_s
+         addr_i => logout_IX_s(7 downto 0),
+         data_o => mantissa_X_s
       ); -- i_rom_exp
 
 
@@ -126,13 +154,27 @@ begin
    i_float2fixed : entity work.float2fixed
       port map (
          clk_i      => clk_i,
-         sign_i     => sign_II_r,
-         exponent_i => exponent_II_r,
-         mantissa_i => mantissa_II_s,
-         value_o    => sin_III_s
+         sign_i     => sign_X_r,
+         exponent_i => exponent_X_r,
+         mantissa_i => mantissa_X_s,
+         value_o    => sin_XI_s
       );
 
-   sin_III_o <= sin_III_s;
+
+   ----------------------------------------------------
+   -- Stages 4-8
+   ----------------------------------------------------
+
+   i_ring_buffer_out : entity work.ring_buffer
+      generic map (
+         G_WIDTH  => 14,
+         G_STAGES => 5
+      )
+      port map (
+         clk_i  => clk_i,
+         data_i => sin_XI_s,
+         data_o => val_XVI_o 
+      ); -- i_ring_buffer_out
 
 end architecture synthesis;
 

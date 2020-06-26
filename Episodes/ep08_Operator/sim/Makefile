@@ -22,6 +22,7 @@ SRC    += $(SRC_DIR)/phase_generator.vhd
 SRC    += $(SRC_DIR)/op/rom_logsin.vhd
 SRC    += $(SRC_DIR)/op/rom_exp.vhd
 SRC    += $(SRC_DIR)/op/float2fixed.vhd
+SRC    += $(SRC_DIR)/op/phase_mod.vhd
 SRC    += $(SRC_DIR)/operator.vhd
 SRC    += $(SRC_DIR)/ym2151.vhd
 

@@ -27,6 +27,8 @@ entity configurator is
       keyon_o         : out std_logic;
       key_code_o      : out std_logic_vector(6 downto 0);
       key_fraction_o  : out std_logic_vector(5 downto 0);
+      con_o           : out std_logic_vector(2 downto 0);
+      feedback_o      : out std_logic_vector(2 downto 0);
       total_level_o   : out std_logic_vector(6 downto 0);
       attack_rate_o   : out std_logic_vector(4 downto 0);
       key_scale_o     : out std_logic_vector(1 downto 0);
@@ -68,7 +70,9 @@ begin
    begin
       if rising_edge(cfg_clk_i) then
          if cfg_counter /= 0 then
-            cfg_counter <= cfg_counter - 1;
+            if cfg_counter > 1 or slot_r = 31 then
+               cfg_counter <= cfg_counter - 1;
+            end if;
          end if;
 
          if cfg_valid_i = '1' and cfg_ready_o = '1' then
@@ -113,6 +117,8 @@ begin
    keyon_o         <= keyon_r(to_integer(slot_r(2 downto 0)))(to_integer(slot_r(3) & slot_r(4)));
    key_code_o      <= range_20_r(to_integer(slot_r(2 downto 0)) + 8)(6 downto 0);
    key_fraction_o  <= range_20_r(to_integer(slot_r(2 downto 0)) + 16)(7 downto 2);
+   con_o           <= range_20_r(to_integer(slot_r(2 downto 0)))(2 downto 0);
+   feedback_o      <= range_20_r(to_integer(slot_r(2 downto 0)))(5 downto 3);
    total_level_o   <= range_60_r(to_integer(slot_r))(6 downto 0);
    attack_rate_o   <= range_80_r(to_integer(slot_r))(4 downto 0);
    key_scale_o     <= range_80_r(to_integer(slot_r))(7 downto 6);

@@ -56,23 +56,37 @@ package ym2151_bfm_pkg is
    );
 
    type config_t is record
-      fb      : integer;
-      kc      : integer;
-      kf      : integer;
-      oper_m1 : oper_t;
-      oper_m2 : oper_t;
-      oper_c1 : oper_t;
-      oper_c2 : oper_t;
+      mode         : integer;
+      fb           : integer;
+      kc           : integer;
+      kf           : integer;
+      oper_m1      : oper_t;
+      oper_m2      : oper_t;
+      oper_c1      : oper_t;
+      oper_c2      : oper_t;
+      ph_m1_prev   : integer;
+      ph_m1_prev2  : integer;
+      ph_m1_prev3  : integer;
+      out_m1_prev  : integer;
+      out_m1_prev2 : integer;
+      out_m1_prev3 : integer;
    end record config_t;
 
    constant C_CONFIG_DEFAULT : config_t := (
-      fb      => 0,
-      kc      => 0,
-      kf      => 0,
-      oper_m1 => C_OPER_DEFAULT,
-      oper_m2 => C_OPER_DEFAULT,
-      oper_c1 => C_OPER_DEFAULT,
-      oper_c2 => C_OPER_DEFAULT
+      mode         => 0,
+      fb           => 0,
+      kc           => 0,
+      kf           => 0,
+      oper_m1      => C_OPER_DEFAULT,
+      oper_m2      => C_OPER_DEFAULT,
+      oper_c1      => C_OPER_DEFAULT,
+      oper_c2      => C_OPER_DEFAULT,
+      ph_m1_prev   => 0,
+      ph_m1_prev2  => 0,
+      ph_m1_prev3  => 0,
+      out_m1_prev  => 0,
+      out_m1_prev2 => 0,
+      out_m1_prev3 => 0
    );
 
 
@@ -90,7 +104,7 @@ package body ym2151_bfm_pkg is
                           signal   clk_i     : in    std_logic;
                           signal   ym2151_io : inout ym2151_if_t) is
    begin
---       report "Writing: 0x" & to_hstring(addr_i) & " <= 0x" & to_hstring(data_i);
+--      report "Writing: 0x" & to_hstring(addr_i) & " <= 0x" & to_hstring(data_i);
       ym2151_io.cfg_valid <= '1';
       ym2151_io.cfg_addr  <= addr_i;
       ym2151_io.cfg_data  <= data_i;
@@ -132,7 +146,7 @@ package body ym2151_bfm_pkg is
       constant C_OPER_C2 : integer := 3;
 
    begin
-      write(X"20", 16#87#);
+      write(X"20", 16#80# + config_i.fb*8 + config_i.mode);
       write(X"28", config_i.kc);
       write(X"30", config_i.kf*4);
       config_oper(C_OPER_M1, config_i.oper_m1);
