@@ -44,7 +44,7 @@ begin
 
    p_config : process (slot_r)
    begin
-      -- Default is to disable the slot.
+      -- Default is to disable this slot.
       total_level_o  <= (others => '1');
       key_code_o     <= (others => '0');
       key_fraction_o <= (others => '0');

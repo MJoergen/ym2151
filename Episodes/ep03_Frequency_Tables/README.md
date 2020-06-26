@@ -16,13 +16,25 @@ Since the YM2151 only operates at half the clock frequency, I've added
 a new internal clock signal clk\_int\_r and a correspondingly synchronized
 reset signal rst\_int\_r.
 
-The current phase is now increased to 20 bits for better precision. The upper
-10 bits are fed to the sine table calculation.
-
 The phase is updated once every 32 internal clock cycles, so we introduce a
-slot index running from 0 to 31.  When the slot index wraps to 0, the phase is
-updated. This happens at a rate of 3.579 MHz / 2 / 32 = 55.9 kHz.  These
-changes are implemented in the process p\_phase in ym2151.vhd.
+slot index running from 0 to 31. This index wraps around at a rate of 3.579 MHz
+/ 2 / 32 = 55.9 kHz, which will be the sample rate of the output.
+
+The note is stored in the two signals key\_code\_s and key\_fraction\_s.  Their
+value will depend on the current slot number, and currently only slot 0 has a
+specific value.
+
+The calc\_freq module calculates the frequency in the form of a phase increment
+per sample. This calculation has a latency of two clock cycles. Thus a delayed
+slot number slot\_II\_s is introduced, which has the same latency as the output
+of the calc\_freq module. This is used to update the current phase.
+
+The current phase is now increased to 20 bits for better precision. The upper
+10 bits are fed to the operator module.
+
+Finally, an extra register is added to the output to help close timing.  The
+timing problem is due to clock skew introduced by the BUFG for the internal
+clock.
 
 ## calc\_freq
 Within the calc\_freq module. the key code is split into an octave number (3

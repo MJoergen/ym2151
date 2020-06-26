@@ -22,6 +22,8 @@ Nexys4DDR board.
   This episode allows the design to replay register writes from a text file.
 * [Episode 7 - Envelope Generator](Episodes/ep07_Envelope_Generator).
   This episode allows the design to play a complete tune!
+* [Episode 8 - Operator](Episodes/ep08_Operator).
+  This episode adds more complex waveforms.
 
 ## Links
 The [doc](doc) directory contains the [original
@@ -33,4 +35,30 @@ However, I've also made use of the following repositories here on GitHub:
   in VHDL.
 * [jotego/jt51](https://github.com/jotego/jt51): Complete implementation in
   Verilog.
+
+## Utilization report
+
+| Episode | LUT | Regs | Slice | Logic | Memory |  BRAM |
+| ------- | --- | ---- | ----- | ----- | ------ | ----- |
+|      1  |   1 |   13 |   10  |    1  |     0  |   0   |
+|      2  |  52 |   33 |   25  |   52  |     0  |   1   |
+|      3  |  76 |   76 |   27  |   76  |     0  |   1.5 |
+|      4  | 119 |  111 |   57  |  119  |     0  |   1.5 |
+|      5  | 156 |  121 |   57  |  136  |    20  |   1.5 |
+|      6  | 188 |  141 |   83  |  144  |    44  |   1.5 |
+|      7  | 351 |  211 |  126  |  266  |    85  |   1.5 |
+|      8  | 529 |  279 |  174  |  390  |   139  |   1.5 |
+
+
+### LUT usage
+| Episode | Accumulator | Configurator | Envelope | Operator | Phase |
+| ------- | ----------- | ------------ | -------- | -------- | ----- |
+|      1  |     0       |       0      |     0    |      1   |    0  |
+|      2  |     0       |       0      |     0    |     50   |    0  |
+|      3  |     0       |       0      |     0    |     50   |    6  |
+|      4  |    25       |       0      |     0    |     66   |    6  |
+|      5  |    25       |       6      |     0    |     63   |   58  |
+|      6  |    25       |      28      |     0    |     63   |   69  |
+|      7  |    25       |      68      |   120    |     66   |   69  |
+|      8  |    26       |      73      |   127    |    227   |   75  |
 

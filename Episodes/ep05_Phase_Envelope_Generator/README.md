@@ -6,18 +6,9 @@ we add the Phase and Envelope Generator.  The purpose of this episode is to be
 able to play simultaneously different sounds from each of the 32 output slots.
 Furthermore, we will cleanup the design to prepare for the next episode.
 
-## Naming Convention
-Since the design is growing in complexity, and since several modules are
-working in parallel and in a pipeline fashion, I have found it convenient to
-employ the same naming convention as [jotego](https://github.com/jotego/). So
-within a module, a signal name is postfixed with the delay written in roman
-numerals. For instance, the signal name\_I is delayed one clock cycle relative
-to the input to the module.  I've found this increases readability and helps
-spot pipeline errors more easily.
-
 ## Configurator
 In the previous version the note and attenuation level were hard coded in the
-file ym2151.vhd. Now I've made a separate block Configurator, which stores the
+file ym2151.vhd. Now I've made a separate block configurator that stores the
 configuration of each of the 32 slots.
 
 At each clock cycle this block outputs the slot number and the corresponding
@@ -34,7 +25,7 @@ the 32 different slots. The module takes as input the current frequency
 information etc. and outputs (a fixed number of clock cycles later) the updated
 phase.
 
-Currently, the latency in this module is 3 clock cycles, but that may increase
+Currently, the latency in this module is 2 clock cycles, but that may increase
 as more features are implemented.
 
 The current phase of each slot is stored in a ring buffer. This is essentially
@@ -52,7 +43,7 @@ attenuation level (to be input to the calc\_sine module) from the total\_level
 values (received from the configurator module). This calculation is a simple
 shift by three bits.
 
-Furthermore there is a seemingly rather arbitrary delay of three clock cycles.
+Furthermore there is a seemingly rather arbitrary delay of two clock cycles.
 This is because the input to the calc\_sine module expects the attenuation
 level and the phase value to be available simultaneously. So the Phase Generator
 and the Envelope Generator are required to have the same latency.
