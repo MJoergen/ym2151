@@ -5,8 +5,8 @@
 -- Description: This module is the top level for the YM2151.
 --
 -- The input clock frequency should nominally be 3.579545 MHz.
--- The output is an unsigned value representing a fractional
--- output between logical 0 and logical 1.
+-- The output is an unsigned value representing a fractional output between
+-- logical 0 and logical 1.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -28,7 +28,7 @@ architecture synthesis of ym2151 is
 
    signal phase_r     : std_logic_vector(15 downto 0);
 
-   signal sin_s       : std_logic_vector(15 downto 0) := (others => '0');
+   signal sin_III_s   : std_logic_vector(13 downto 0);
 
    constant C_OFFSET  : std_logic_vector(15 downto 0) := X"8000";
 
@@ -51,19 +51,19 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- Calculate sin() of the phase
+   -- Calculate sin(phase).
    -----------------------------------------------------------------------------
 
-   i_calc_sine : entity work.calc_sine
+   i_operator : entity work.operator
       port map (
-         clk_i   => clk_i,
-         phase_i => phase_r(15 downto 6),
-         sin_o   => sin_s(15 downto 2)
-      );
+         clk_i     => clk_i,
+         phase_i   => phase_r(15 downto 6),
+         sin_III_o => sin_III_s
+      ); -- i_operator
 
 
    -- Convert from signed to unsigned.
-   wav_o <= sin_s xor C_OFFSET;
+   wav_o <= (sin_III_s & "00") xor C_OFFSET;
 
 end architecture synthesis;
 

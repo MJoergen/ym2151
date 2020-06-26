@@ -3,7 +3,7 @@
 -- Project: YM2151 implementation
 --
 -- Description: This is the main Phase Generator in the design.  It takes as
--- input the configuration data, and (with a constant latency) output the
+-- input the configuration data, and (with a constant latency) outputs the
 -- current phase. In other words, this module maintains 32 different phases as
 -- internal state.  This corresponds to the 32 different output slots.
 --
@@ -11,7 +11,7 @@
 -- received and some fixed number of clock cycles later the correct phase is
 -- output.
 --
--- Latency: 3 clock cycles.
+-- Latency: 2 clock cycles.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -25,7 +25,7 @@ entity phase_generator is
       key_code_i     : in  std_logic_vector(6 downto 0);
       key_fraction_i : in  std_logic_vector(5 downto 0);
       -- Phase output
-      phase_III_o    : out std_logic_vector(9 downto 0)
+      phase_II_o     : out std_logic_vector(9 downto 0)
    );
 end entity phase_generator;
 
@@ -79,20 +79,7 @@ begin
       ); -- i_ring_buffer_phase
 
 
-   -----------------------------------------------------------------------------
-   -- Delay.
-   -----------------------------------------------------------------------------
-
-   i_ring_buffer_out : entity work.ring_buffer
-      generic map (
-         G_WIDTH  => 10,
-         G_STAGES => 1
-      )
-      port map (
-         clk_i  => clk_i,
-         data_i => phase_II_s(19 downto 10),
-         data_o => phase_III_o
-      ); -- i_ring_buffer_out
+   phase_II_o <= phase_II_s(19 downto 10);
 
 end architecture synthesis;
 

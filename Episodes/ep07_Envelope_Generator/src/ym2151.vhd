@@ -5,8 +5,8 @@
 -- Description: This module is the top level for the YM2151.
 --
 -- The input clock frequency should nominally be 3.579545 MHz.
--- The output is an unsigned value representing a fractional
--- output between logical 0 and logical 1.
+-- The output is an unsigned value representing a fractional output between
+-- logical 0 and logical 1 and is updated at a rate of 55.9 kHz.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -22,7 +22,7 @@ entity ym2151 is
       cfg_addr_i   : in  std_logic_vector(7 downto 0);
       cfg_data_i   : in  std_logic_vector(7 downto 0);
       -- Debug output
-      deb_atten0_o : out std_logic_vector(9 downto 0) := (others => '1');
+      deb_atten0_o : out std_logic_vector(9 downto 0);
       -- Waveform output
       wav_o        : out std_logic_vector(15 downto 0)
    );
@@ -48,15 +48,15 @@ architecture synthesis of ym2151 is
    signal release_rate_s  : std_logic_vector(3 downto 0);
 
    -- Output from Envelope Generator
-   signal atten_III_s     : std_logic_vector(9 downto 0);
+   signal atten_II_s      : std_logic_vector(9 downto 0);
 
    -- Output from Phase Generator
-   signal phase_III_s     : std_logic_vector(9 downto 0);
+   signal phase_II_s      : std_logic_vector(9 downto 0);
 
-   -- Output from Calc Sine
-   signal sin_VI_s        : std_logic_vector(13 downto 0);
+   -- Output from Operator
+   signal sin_V_s         : std_logic_vector(13 downto 0);
 
-   signal slot_VI_s       : std_logic_vector(4 downto 0);
+   signal slot_V_s        : std_logic_vector(4 downto 0);
 
    signal wav_s           : std_logic_vector(15 downto 0);
    constant C_OFFSET      : std_logic_vector(15 downto 0) := X"8000";
@@ -131,7 +131,7 @@ begin
          sustain_rate_i  => sustain_rate_s,
          sustain_level_i => sustain_level_s,
          release_rate_i  => release_rate_s,
-         atten_III_o     => atten_III_s
+         atten_II_o      => atten_II_s
       ); -- i_envelope_generator
 
 
@@ -145,7 +145,7 @@ begin
          rst_i          => rst_int_r,
          key_code_i     => key_code_s,
          key_fraction_i => key_fraction_s,
-         phase_III_o    => phase_III_s
+         phase_II_o     => phase_II_s
       ); -- i_phase_generator
 
 
@@ -153,27 +153,27 @@ begin
    -- Calculate sin(phase).
    -----------------------------------------------------------------------------
 
-   i_calc_sine : entity work.calc_sine
+   i_operator : entity work.operator
       port map (
-         clk_i   => clk_int_r,
-         atten_i => atten_III_s,
-         phase_i => phase_III_s,
-         sin_o   => sin_VI_s
-      ); -- i_calc_sine
+         clk_i     => clk_int_r,
+         atten_i   => atten_II_s,
+         phase_i   => phase_II_s,
+         sin_III_o => sin_V_s
+      ); -- i_operator
 
 
    -----------------------------------------------------------------------------
    -- Accumulate results from all slots.
    -----------------------------------------------------------------------------
 
-   slot_VI_s <= slot_s - 6;   -- Adjust for latency.
+   slot_V_s <= slot_s - 5;   -- Adjust for latency.
 
    i_accumulator : entity work.accumulator
       port map (
          clk_i   => clk_int_r,
          rst_i   => rst_int_r,
-         slot_i  => slot_VI_s,
-         value_i => sin_VI_s,
+         slot_i  => slot_V_s,
+         value_i => sin_V_s,
          wav_o   => wav_s
       ); -- i_accumulator
 
@@ -194,8 +194,8 @@ begin
    p_debug : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         if slot_s = 3 then
-            deb_atten0_o <= atten_III_s;
+         if slot_s = 2 then
+            deb_atten0_o <= atten_II_s;
          end if;
          if rst_i = '1' then
             deb_atten0_o <= (others => '1');

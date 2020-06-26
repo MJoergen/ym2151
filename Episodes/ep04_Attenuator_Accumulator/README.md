@@ -33,5 +33,5 @@ The top-level file now instantiates the accumulator module. Furthermore, the
 attenuation is set to maximum for all slots except the first. We have to be
 careful with keeping track of the current slot, so when instantiating the
 accumulator, the slot number must be shifted according to the latency in the
-calc\_sine module.
+operator module.
 

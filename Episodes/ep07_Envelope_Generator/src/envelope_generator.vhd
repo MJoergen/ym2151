@@ -8,7 +8,7 @@
 -- attenuation level in units of 1/64'th powers of 0.5, i.e. a unit of
 -- 6/64 dB = 93.75 mdB.
 --
--- Latency: 3 clock cycles.
+-- Latency: 2 clock cycles.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -27,7 +27,7 @@ entity envelope_generator is
       sustain_rate_i  : in  std_logic_vector(4 downto 0);
       sustain_level_i : in  std_logic_vector(3 downto 0);   -- Units of 3 dB.
       release_rate_i  : in  std_logic_vector(3 downto 0);
-      atten_III_o     : out std_logic_vector(9 downto 0)
+      atten_II_o      : out std_logic_vector(9 downto 0)
    );
 end entity envelope_generator;
 
@@ -196,18 +196,18 @@ begin
 
 
    -----------------------------------------------------------------------------
-   -- 3 clock cycle delay
+   -- 2 clock cycle delay
    -----------------------------------------------------------------------------
 
    i_ring_buffer_output : entity work.ring_buffer
       generic map (
          G_WIDTH    => 10,
-         G_STAGES   => 3
+         G_STAGES   => 2
       )
       port map (
          clk_i  => clk_i,
          data_i => atten_final_s,
-         data_o => atten_III_o 
+         data_o => atten_II_o 
       ); -- i_ring_buffer_output
 
 end architecture synthesis;

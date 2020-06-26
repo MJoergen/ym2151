@@ -5,8 +5,8 @@
 -- Description: This module is the top level for the YM2151.
 --
 -- The input clock frequency should nominally be 3.579545 MHz.
--- The output is an unsigned value representing a fractional
--- output between logical 0 and logical 1.
+-- The output is an unsigned value representing a fractional output between
+-- logical 0 and logical 1 and is updated at a rate of 55.9 kHz.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -29,20 +29,20 @@ architecture synthesis of ym2151 is
 
    -- Slot Index
    signal slot_r         : std_logic_vector(4 downto 0);
+   signal slot_II_s      : std_logic_vector(4 downto 0);
+   signal slot_V_s       : std_logic_vector(4 downto 0);
+
+   signal key_code_s     : std_logic_vector(6 downto 0);
+   signal key_fraction_s : std_logic_vector(5 downto 0);
+
+   signal phase_inc_II_s : std_logic_vector(19 downto 0);
+   signal phase_II_r     : std_logic_vector(19 downto 0);
 
    -- Attenutation in units of 1/64'th powers of 0.5.
-   signal atten_s        : std_logic_vector(9 downto 0);
+   signal atten_II_s     : std_logic_vector(9 downto 0);
 
-   -- This selects the key A4, with frequency 440 Hz.
-   signal key_code_s     : std_logic_vector(6 downto 0) := "1001010";
-   signal key_fraction_s : std_logic_vector(5 downto 0) := (others => '0');
-
-   signal phase_inc_s    : std_logic_vector(19 downto 0);
-   signal phase_r        : std_logic_vector(19 downto 0);
-
-   signal sin_s          : std_logic_vector(13 downto 0);
-
-   signal slot_s         : std_logic_vector(4 downto 0);
+   -- Output from Operator
+   signal sin_V_s        : std_logic_vector(13 downto 0);
 
    signal wav_s          : std_logic_vector(15 downto 0);
    constant C_OFFSET     : std_logic_vector(15 downto 0) := X"8000";   
@@ -88,12 +88,18 @@ begin
       end if;
    end process p_slot;
 
+   -- Adjust for latency.
+   slot_II_s <= slot_r - 2;
+   slot_V_s  <= slot_r - 5;
+
 
    -----------------------------------------------------------------------------
-   -- Select attenuation for the various slots
+   -- Select key code and attenuation for the various slots
    -----------------------------------------------------------------------------
 
-   atten_s <= (others => '0') when slot_r = 0 else (others => '1');
+   key_code_s     <= "1001010"       when slot_r    = 0 else (others => '0');
+   key_fraction_s <= (others => '0') when slot_r    = 0 else (others => '0');
+   atten_II_s     <= (others => '0') when slot_II_s = 0 else (others => '1');
 
 
    -----------------------------------------------------------------------------
@@ -105,7 +111,7 @@ begin
          clk_i          => clk_int_r,
          key_code_i     => key_code_s,
          key_fraction_i => key_fraction_s,
-         phase_inc_o    => phase_inc_s
+         phase_inc_II_o => phase_inc_II_s
       ); -- i_calc_freq
 
 
@@ -117,12 +123,12 @@ begin
    begin
       if rising_edge(clk_int_r) then
          -- Only update phase when in first slot
-         if slot_r = 0 then
-            phase_r <= phase_r + phase_inc_s;
+         if slot_II_s = 0 then
+            phase_II_r <= phase_II_r + phase_inc_II_s;
          end if;
 
          if rst_int_r = '1' then
-            phase_r <= (others => '0');
+            phase_II_r <= (others => '0');
          end if;
       end if;
    end process p_phase;
@@ -132,27 +138,25 @@ begin
    -- Calculate sin(phase).
    -----------------------------------------------------------------------------
 
-   i_calc_sine : entity work.calc_sine
+   i_operator : entity work.operator
       port map (
-         clk_i   => clk_int_r,
-         atten_i => atten_s,
-         phase_i => phase_r(19 downto 10),
-         sin_o   => sin_s
-      ); -- i_calc_sine
+         clk_i     => clk_int_r,
+         atten_i   => atten_II_s,
+         phase_i   => phase_II_r(19 downto 10),
+         sin_III_o => sin_V_s
+      ); -- i_operator
 
 
    -----------------------------------------------------------------------------
    -- Accumulate results from all slots.
    -----------------------------------------------------------------------------
 
-   slot_s <= slot_r - 3;   -- Adjust for latency in calc_sine.
-
    i_accumulator : entity work.accumulator
       port map (
          clk_i   => clk_int_r,
          rst_i   => rst_int_r,
-         slot_i  => slot_s,
-         value_i => sin_s,
+         slot_i  => slot_V_s,
+         value_i => sin_V_s,
          wav_o   => wav_s
       ); -- i_accumulator
 
