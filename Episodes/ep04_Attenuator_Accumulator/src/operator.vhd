@@ -21,16 +21,16 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
 
-entity calc_sine is
+entity operator is
    port (
-      clk_i   : in  std_logic;
-      phase_i : in  std_logic_vector(9 downto 0);
-      atten_i : in  std_logic_vector(9 downto 0);
-      sin_o   : out std_logic_vector(13 downto 0)
+      clk_i     : in  std_logic;
+      phase_i   : in  std_logic_vector(9 downto 0);
+      atten_i   : in  std_logic_vector(9 downto 0);
+      sin_III_o : out std_logic_vector(13 downto 0)
    );
-end entity calc_sine;
+end entity operator;
 
-architecture synthesis of calc_sine is
+architecture synthesis of operator is
 
    -- Stage 0
    signal sign_s        : std_logic;
@@ -132,7 +132,7 @@ begin
          value_o    => sin_III_s
       );
 
-   sin_o <= sin_III_s;
+   sin_III_o <= sin_III_s;
 
 end architecture synthesis;
 

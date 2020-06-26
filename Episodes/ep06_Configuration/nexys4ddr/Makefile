@@ -21,7 +21,7 @@ SRC    += $(SRC_DIR)/phase_generator.vhd
 SRC    += $(SRC_DIR)/op/rom_logsin.vhd
 SRC    += $(SRC_DIR)/op/rom_exp.vhd
 SRC    += $(SRC_DIR)/op/float2fixed.vhd
-SRC    += $(SRC_DIR)/calc_sine.vhd
+SRC    += $(SRC_DIR)/operator.vhd
 SRC    += $(SRC_DIR)/ym2151.vhd
 
 # These are specific for the Nexys4DDR board.
