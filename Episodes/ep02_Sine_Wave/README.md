@@ -25,8 +25,8 @@ particular, the binary representation of the numbers adds considerable
 complexity.
 
 In the following I'm referring to the file
-[calc\_sine.vhd](src/calc\_sine.vhd). The calculation is split into a number of
-stages. The files for the stages have been placed in a separate directory op.
+[operator.vhd](src/operator.vhd). The calculation is split into a number of
+stages. The files for the stages have been placed in a separate directory op/.
 The reason for this is to match figure 2.1 in the [YM2151
 documentation](../../doc/yamaha_ym2151_synthesis.pdf) and to keep the source tree
 nice and tidy.
@@ -61,12 +61,21 @@ the exponent, and the mantissa to generate the final output value.
 
 The output is a 14-bit signed value between -1 and +1.
 
+## Naming Convention
+Since the design is growing in complexity, and since several modules are
+working in parallel and in a pipeline fashion, I have found it convenient to
+employ the same naming convention as [jotego](https://github.com/jotego/). So
+within a module, a signal name is postfixed with the delay written in roman
+numerals. For instance, the signal name\_I is delayed one clock cycle relative
+to the input to the module.  I've found this increases readability and helps
+spot pipeline errors more easily.
+
 ## Other changes
 The Makefiles in sim/ and nexys4ddr/ have been updated with the new files.  In
-the file ym2151.vhd the signal wav\_r has been renamed to phase\_r, and the
-calc\_sine module has been instantiated. Only the upper 10 bits of phase\_r are
-fed to this module, and the output (14 bits) is padded with two zero bits.
+the file ym2151.vhd the operator module has been instantiated. Only the upper
+10 bits of phase\_r are fed to this module, and the output (14 bits) is padded
+with two zero bits.
 
-Finally, there is a conversion from signed to unsigned, i.e. an addition of 1.
-This is achieved simply by negating the MSB.
+Finally, there is a conversion from signed to unsigned.  This is achieved
+simply by negating the MSB.
 
