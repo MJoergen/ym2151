@@ -24,6 +24,8 @@ Nexys4DDR board.
   This episode allows the design to play a complete tune!
 * [Episode 8 - Operator](Episodes/ep08_Operator).
   This episode adds more complex waveforms.
+* [Episode 9 - Detone](Episodes/ep09_Detune).
+  This episode adds support for detune modes and phase multiplication.
 
 ## Links
 The [doc](doc) directory contains the [original
@@ -42,12 +44,13 @@ However, I've also made use of the following repositories here on GitHub:
 | ------- | --- | ---- | ----- | ----- | ------ | ----- |
 |      1  |   1 |   13 |   10  |    1  |     0  |   0   |
 |      2  |  52 |   33 |   25  |   52  |     0  |   1   |
-|      3  |  76 |   76 |   27  |   76  |     0  |   1.5 |
-|      4  | 119 |  111 |   57  |  119  |     0  |   1.5 |
-|      5  | 156 |  121 |   57  |  136  |    20  |   1.5 |
-|      6  | 188 |  141 |   83  |  144  |    44  |   1.5 |
-|      7  | 351 |  211 |  126  |  266  |    85  |   1.5 |
-|      8  | 529 |  279 |  174  |  390  |   139  |   1.5 |
+|      3  |  76 |   76 |   34  |   76  |     0  |   1.5 |
+|      4  | 119 |  111 |   48  |  119  |     0  |   1.5 |
+|      5  | 156 |  121 |   59  |  136  |    20  |   1.5 |
+|      6  | 188 |  141 |   79  |  144  |    44  |   1.5 |
+|      7  | 351 |  211 |  130  |  266  |    85  |   1.5 |
+|      8  | 529 |  279 |  173  |  390  |   139  |   1.5 |
+|      9  | 655 |  291 |  209  |  504  |   151  |   1.5 |
 
 
 ### LUT usage
@@ -61,4 +64,5 @@ However, I've also made use of the following repositories here on GitHub:
 |      6  |    25       |      28      |     0    |     63   |   69  |
 |      7  |    25       |      68      |   120    |     66   |   69  |
 |      8  |    26       |      73      |   127    |    227   |   75  |
+|      9  |    26       |      87      |   127    |    227   |  187  |
 
