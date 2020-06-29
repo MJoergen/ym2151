@@ -199,7 +199,7 @@ begin
          config            := C_CONFIG_DEFAULT;
          config.mode       := mode;
          config.fb         := mode;
-         config.kc         := 16#2A#;
+         config.kc         := 16#2A# + 4*mode;
          config.oper_m1.tl := 8;
          config.oper_c1.tl := 0;
          config.oper_m2.tl := 24;
