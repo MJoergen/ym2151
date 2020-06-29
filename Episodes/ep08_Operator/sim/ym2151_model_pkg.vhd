@@ -21,17 +21,13 @@ package ym2151_model_pkg is
       release_time  : integer; -- Number of samples
    end record ym2151_envelope_t;
 
-   type ym2151_state_t is record
-      phase   : integer;
-      m1      : integer;
-      m1_prev : integer;
-   end record ym2151_state_t;
-
    -- Calculate the expected output 'step' number of steps after Key ON, based on the supplied configuration.
    -- This procedure maintains state in the config variable.
    procedure ym2151_calcExpectedWaveform(step     : integer;
                                          config   : inout config_t;
                                          expected : out integer);
+
+   function calc_phase_inc(config : config_t) return integer;
 
    function ym2151_calcExpectedEnvelope(config        : config_t;
                                         release_level : integer) return ym2151_envelope_t;
@@ -53,21 +49,51 @@ package body ym2151_model_pkg is
       return to_hstring(to_stdlogicvector(val, 16));
    end function;
 
-   procedure ym2151_calcExpectedWaveform(step : integer; config : inout config_t; expected : out integer) is
+   function calc_phase_inc(config : config_t) return integer is
+      variable kc_kf      : integer;
+      variable key_note   : integer;
+      variable key_octave : integer;
+      variable freq_note  : real;
+      variable phinc_note : integer;
+      variable phase_inc  : integer;
+   begin
+      kc_kf := config.kc * 64 + config.kf;
 
-      constant C_TWO_PI    : real := 2.0 * 3.1415926535897932384626433832795;
-      constant C_FREQ      : real := 110.0;  -- determined from key code.
-      constant C_PHASE_INC : integer := integer(1048576.0*64.0/3579545.0*C_FREQ);
+      key_note   := kc_kf mod 1024;
+      key_octave := kc_kf / 1024;
+
+      -- Calculate frequency corresponding to octave number 2.
+      -- Key code 0x2A has frequency 110.0 Hz;
+      freq_note  := 2.0**(real(key_note - (key_note/4/64)*64 - 8*64)/12.0/64.0)*110.0;
+      phinc_note := integer(1048576.0*64.0/3579545.0*freq_note);
+
+      case key_octave is
+         when 0 => phase_inc := phinc_note / 4;
+         when 1 => phase_inc := phinc_note / 2;
+         when 2 => phase_inc := phinc_note;
+         when 3 => phase_inc := phinc_note *  2;
+         when 4 => phase_inc := phinc_note *  4;
+         when 5 => phase_inc := phinc_note *  8;
+         when 6 => phase_inc := phinc_note * 16;
+         when 7 => phase_inc := phinc_note * 32;
+         when others => phase_inc := 0;
+      end case;
+
+      return phase_inc;
+   end function calc_phase_inc;
+
+   procedure ym2151_calcExpectedWaveform(step : integer; config : inout config_t; expected : out integer) is
 
       -- This is the main funtion that (approximately) calculates
       -- 0.5^(tl/8) * sin(2*pi*ph/1024).
       -- This function gives results identical to the YM2151.
       function operator(ph : integer; tl : integer) return integer is
-         variable tmp    : real;
-         variable sgn    : real;
-         variable logsin : integer;
-         variable res    : real;
-         variable exp    : real;
+         constant C_TWO_PI : real := 2.0 * 3.1415926535897932384626433832795;
+         variable tmp      : real;
+         variable sgn      : real;
+         variable logsin   : integer;
+         variable res      : real;
+         variable exp      : real;
       begin
          tmp    := sin((real(ph)+0.5)/1024.0*C_TWO_PI);
          sgn    := tmp;
@@ -95,6 +121,7 @@ package body ym2151_model_pkg is
          return 0;
       end function operator;
 
+      variable phase_inc_v   : integer;
       variable phase_v       : integer;
       variable phase_prev_v  : integer;
       variable phase_prev2_v : integer;
@@ -111,11 +138,12 @@ package body ym2151_model_pkg is
       variable sum_v         : integer;
 
    begin
+      phase_inc_v   := calc_phase_inc(config);
       out_v         := 0;
-      phase_v       := (C_PHASE_INC * step) / 1024;
-      phase_prev_v  := (C_PHASE_INC * (step-1)) / 1024;
-      phase_prev2_v := (C_PHASE_INC * (step-2)) / 1024;
-      phase_prev3_v := (C_PHASE_INC * (step-3)) / 1024;
+      phase_v       := (phase_inc_v * step) / 1024;
+      phase_prev_v  := (phase_inc_v * (step-1)) / 1024;
+      phase_prev2_v := (phase_inc_v * (step-2)) / 1024;
+      phase_prev3_v := (phase_inc_v * (step-3)) / 1024;
 
       -- Handle feedback (M1 only).
       sum_v := 0;
@@ -133,13 +161,20 @@ package body ym2151_model_pkg is
       end if;
       case config.fb is
          when 0 => ph_m1_v := phase_v;
-         when 1 => ph_m1_v := phase_v + sum_v/512; if sum_v < 0 and sum_v mod 512 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
-         when 2 => ph_m1_v := phase_v + sum_v/256; if sum_v < 0 and sum_v mod 256 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
-         when 3 => ph_m1_v := phase_v + sum_v/128; if sum_v < 0 and sum_v mod 128 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
-         when 4 => ph_m1_v := phase_v + sum_v/64;  if sum_v < 0 and sum_v mod  64 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
-         when 5 => ph_m1_v := phase_v + sum_v/32;  if sum_v < 0 and sum_v mod  32 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
-         when 6 => ph_m1_v := phase_v + sum_v/16;  if sum_v < 0 and sum_v mod  16 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
-         when 7 => ph_m1_v := phase_v + sum_v/8;   if sum_v < 0 and sum_v mod   8 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 1 => ph_m1_v := phase_v + sum_v/512;
+                   if sum_v < 0 and sum_v mod 512 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 2 => ph_m1_v := phase_v + sum_v/256;
+                   if sum_v < 0 and sum_v mod 256 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 3 => ph_m1_v := phase_v + sum_v/128;
+                   if sum_v < 0 and sum_v mod 128 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 4 => ph_m1_v := phase_v + sum_v/64;
+                   if sum_v < 0 and sum_v mod  64 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 5 => ph_m1_v := phase_v + sum_v/32;
+                   if sum_v < 0 and sum_v mod  32 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 6 => ph_m1_v := phase_v + sum_v/16;
+                   if sum_v < 0 and sum_v mod  16 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
+         when 7 => ph_m1_v := phase_v + sum_v/8;
+                   if sum_v < 0 and sum_v mod   8 /= 0 then ph_m1_v := ph_m1_v - 1; end if;
          when others => ph_m1_v := phase_v;
       end case;
       out_m1_v := operator(ph_m1_v, config.oper_m1.tl);

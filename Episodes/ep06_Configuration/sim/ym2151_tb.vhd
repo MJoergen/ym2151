@@ -11,6 +11,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
 use ieee.math_real.all;
 
+use work.ym2151_model_pkg.all;
 use work.ym2151_bfm_pkg.all;
 
 entity ym2151_tb is
@@ -62,17 +63,10 @@ begin
 
          variable last_wav         : std_logic_vector(15 downto 0) := (others => '0');
          variable last_step        : integer := 0;
-         variable expected_freq    : real;
+         variable phase_inc        : integer;
          variable observed_samples : integer;
          variable expected_samples : integer;
          variable max_diff         : integer;
-
-         function calc_freq(config : config_t) return real is
-            variable key_note : integer;
-         begin
-            key_note := (config.kc - config.kc/4)*64 + config.kf;
-            return 440.0 * 2.0**(real(key_note-3584)/768.0);
-         end function calc_freq;
 
       begin
 
@@ -81,8 +75,8 @@ begin
 
          ym2151_write_config(config, clk_s, ym2151_s);
 
-         expected_freq    := calc_freq(config);
-         expected_samples := integer(3579545.0/64.0/expected_freq);
+         phase_inc := calc_phase_inc(config);
+         expected_samples := 1048576/phase_inc;
 
          for step in 0 to 5*expected_samples loop
             if last_wav(15) = '0' and ym2151_s.wav(15) = '1' then

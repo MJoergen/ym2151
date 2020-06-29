@@ -23,6 +23,7 @@ SRC    += $(SRC_DIR)/ym2151.vhd
 
 # These are testbench related.
 TB      = ym2151_tb
+TB_SRC += ym2151_model_pkg.vhd
 TB_SRC += ym2151_bfm_pkg.vhd
 TB_SRC += wav2file.vhd
 TB_SRC += $(TB).vhd
