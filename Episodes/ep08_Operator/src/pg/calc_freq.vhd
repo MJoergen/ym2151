@@ -23,16 +23,18 @@ end entity calc_freq;
 architecture synthesis of calc_freq is
 
    -- Stage 0
+   signal kf_s           : std_logic_vector(12 downto 0);
    signal octave_s       : std_logic_vector(2 downto 0);
-   signal note_s         : std_logic_vector(3 downto 0);
-   signal addr_s         : std_logic_vector(9 downto 0);
+   signal freq_addr_s    : std_logic_vector(9 downto 0);
 
    -- Stage 1
    signal octave_I_r     : std_logic_vector(2 downto 0);
-   signal freq_I_s       : std_logic_vector(11 downto 0);
+   signal freq_data_I_s  : std_logic_vector(11 downto 0);
+   signal freq_I_s       : std_logic_vector(21 downto 0);
+   signal phase_inc_I_s  : std_logic_vector(19 downto 0);
 
    -- Stage 2
-   signal phase_inc_II_r : std_logic_vector(21 downto 0);
+   signal phase_inc_II_r : std_logic_vector(19 downto 0);
 
 begin
 
@@ -40,16 +42,17 @@ begin
    -- Stage 0
    -----------------------------------------------------------------------------
 
-   octave_s <= key_code_i(6 downto 4);
-   note_s   <= key_code_i(3 downto 0);
-   addr_s   <= note_s & key_fraction_i;
+   kf_s        <= key_code_i & key_fraction_i;
+   octave_s    <= kf_s(12 downto 10);
+   freq_addr_s <= kf_s(9 downto 0);
 
 
    -----------------------------------------------------------------------------
    -- Stage 1
    -----------------------------------------------------------------------------
 
-   p_stage1 : process (clk_i) begin
+   p_stage1 : process (clk_i)
+   begin
       if rising_edge(clk_i) then
          octave_I_r <= octave_s;
       end if;
@@ -58,26 +61,33 @@ begin
    i_rom_freq : entity work.rom_freq
       port map (
          clk_i  => clk_i,
-         addr_i => addr_s,
-         data_o => freq_I_s
+         addr_i => freq_addr_s,
+         data_o => freq_data_I_s
       ); -- i_rom_freq
+
+   -- Shift frequency based on octave number
+   p_freq : process (all)
+   begin
+      freq_I_s <= (others => '0');
+      freq_I_s(11+to_integer(octave_I_r)
+           downto to_integer(octave_I_r)) <= freq_data_I_s;
+   end process p_freq;
+
+   phase_inc_I_s <= freq_I_s(21 downto 2);
 
 
    -----------------------------------------------------------------------------
    -- Stage 2
    -----------------------------------------------------------------------------
 
-   -- Shift frequency based on octave number
-   p_phase_inc : process (clk_i)
+   p_stage2 : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         phase_inc_II_r <= (others => '0');
-         phase_inc_II_r(11+to_integer(octave_I_r)
-                    downto to_integer(octave_I_r)) <= freq_I_s;
+         phase_inc_II_r <= phase_inc_I_s;
       end if;
-   end process p_phase_inc;
+   end process p_stage2;
 
-   phase_inc_II_o <= phase_inc_II_r(21 downto 2);
+   phase_inc_II_o <= phase_inc_II_r;
 
 end architecture synthesis;
 
