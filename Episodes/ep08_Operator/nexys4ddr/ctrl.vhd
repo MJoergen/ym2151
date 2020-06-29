@@ -31,7 +31,7 @@ architecture synthesis of ctrl is
 
    type STATE_t is (WAIT_ST, ADDR_ST, DATA_ST, STOP_ST);
    signal state_r     : STATE_t;
-   signal cnt_r       : std_logic_vector(20 downto 0);
+   signal cnt_r       : std_logic_vector(24 downto 0);
 
    signal playing_r   : std_logic;
    signal cfg_valid_r : std_logic;
@@ -75,7 +75,7 @@ begin
                   cfg_valid_r <= '1';
                   state_r    <= DATA_ST;
                elsif rom_data_s /= 0 then
-                  cnt_r(20 downto 13) <= rom_data_s(7 downto 0);
+                  cnt_r(24 downto 17) <= rom_data_s(7 downto 0);
                   state_r <= WAIT_ST;
                else
                   state_r <= STOP_ST;
@@ -99,7 +99,7 @@ begin
             cfg_data_r  <= (others => '0');
             rom_addr_r  <= (others => '0');
             -- Wait 200 clock cycles before issuing writes to the YM2151.
-            cnt_r       <= to_stdlogicvector(200, 21);
+            cnt_r       <= to_stdlogicvector(200, 25);
             state_r     <= WAIT_ST;
          end if;
       end if;
