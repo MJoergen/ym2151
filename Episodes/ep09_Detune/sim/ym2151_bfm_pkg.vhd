@@ -36,6 +36,9 @@ package ym2151_bfm_pkg is
                           signal   ym2151_io : inout ym2151_if_t);
 
    type oper_t is record
+      dt1 : integer;
+      dt2 : integer;
+      mul : integer;
       tl  : integer;
       ar  : integer;
       dr  : integer;
@@ -45,6 +48,9 @@ package ym2151_bfm_pkg is
    end record oper_t;
 
    constant C_OPER_DEFAULT : oper_t := (
+      dt1 => 0,
+      dt2 => 0,
+      mul => 1,
       tl  => 127,
       ar  => 31,
       dr  => 0,
@@ -130,11 +136,11 @@ package body ym2151_bfm_pkg is
       procedure config_oper(idx  : integer;
                             oper : oper_t) is
       begin
-         write(X"40" + idx*8, 1);
+         write(X"40" + idx*8, oper.dt1*16 + oper.mul);
          write(X"60" + idx*8, oper.tl);
          write(X"80" + idx*8, oper.ar);
          write(X"A0" + idx*8, oper.dr);
-         write(X"C0" + idx*8, oper.sr);
+         write(X"C0" + idx*8, oper.dt2*64 + oper.sr);
          write(X"E0" + idx*8, oper.sl*16 + oper.rr);
       end procedure;
 

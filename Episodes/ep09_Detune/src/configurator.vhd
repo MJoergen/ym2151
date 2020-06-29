@@ -27,6 +27,9 @@ entity configurator is
       keyon_o         : out std_logic;
       key_code_o      : out std_logic_vector(6 downto 0);
       key_fraction_o  : out std_logic_vector(5 downto 0);
+      dt1_o           : out std_logic_vector(2 downto 0);
+      dt2_o           : out std_logic_vector(1 downto 0);
+      mul_o           : out std_logic_vector(3 downto 0);
       con_o           : out std_logic_vector(2 downto 0);
       feedback_o      : out std_logic_vector(2 downto 0);
       total_level_o   : out std_logic_vector(6 downto 0);
@@ -117,6 +120,9 @@ begin
    keyon_o         <= keyon_r(to_integer(slot_r(2 downto 0)))(to_integer(slot_r(3) & slot_r(4)));
    key_code_o      <= range_20_r(to_integer(slot_r(2 downto 0)) + 8)(6 downto 0);
    key_fraction_o  <= range_20_r(to_integer(slot_r(2 downto 0)) + 16)(7 downto 2);
+   dt1_o           <= range_40_r(to_integer(slot_r(2 downto 0)))(6 downto 4);
+   dt2_o           <= range_c0_r(to_integer(slot_r(2 downto 0)))(7 downto 6);
+   mul_o           <= range_40_r(to_integer(slot_r(2 downto 0)))(3 downto 0);
    con_o           <= range_20_r(to_integer(slot_r(2 downto 0)))(2 downto 0);
    feedback_o      <= range_20_r(to_integer(slot_r(2 downto 0)))(5 downto 3);
    total_level_o   <= range_60_r(to_integer(slot_r))(6 downto 0);

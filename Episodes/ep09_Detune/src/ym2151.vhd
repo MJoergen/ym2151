@@ -52,6 +52,9 @@ architecture synthesis of ym2151 is
    signal sustain_rate_s  : std_logic_vector(4 downto 0);
    signal sustain_level_s : std_logic_vector(3 downto 0);
    signal release_rate_s  : std_logic_vector(3 downto 0);
+   signal dt1_s           : std_logic_vector(2 downto 0);
+   signal dt2_s           : std_logic_vector(1 downto 0);
+   signal mul_s           : std_logic_vector(3 downto 0);
 
    -- Output from Envelope Generator
    signal phase_rst_s     : std_logic;
@@ -116,6 +119,9 @@ begin
          keyon_o         => keyon_s,
          key_code_o      => key_code_s,
          key_fraction_o  => key_fraction_s,
+         dt1_o           => dt1_s,
+         dt2_o           => dt2_s,
+         mul_o           => mul_s,
          con_o           => con_s,
          feedback_o      => feedback_s,
          total_level_o   => total_level_s,
@@ -162,6 +168,9 @@ begin
          rst_i          => rst_int_r,
          key_code_i     => key_code_s,
          key_fraction_i => key_fraction_s,
+         dt1_i          => dt1_s,
+         dt2_i          => dt2_s,
+         mul_i          => mul_s,
          phase_rst_i    => phase_rst_s,
          phase_VIII_o   => phase_VIII_s
       ); -- i_phase_generator

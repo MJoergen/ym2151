@@ -49,15 +49,29 @@ package body ym2151_model_pkg is
       return to_hstring(to_stdlogicvector(val, 16));
    end function;
 
+   function calc_freq_dt1(kc_kf : integer) return integer is
+   begin
+      return integer(floor(16.0 * 2.0**(real(kc_kf)/8.0)));
+   end function calc_freq_dt1;
+
    function calc_phase_inc(config : config_t) return integer is
-      variable kc_kf      : integer;
-      variable key_note   : integer;
-      variable key_octave : integer;
-      variable freq_note  : real;
-      variable phinc_note : integer;
-      variable phase_inc  : integer;
+      variable kc_kf        : integer;
+      variable key_note     : integer;
+      variable key_octave   : integer;
+      variable freq_note    : real;
+      variable phinc_note   : integer;
+      variable freq_dt1     : integer;
+      variable freq_dt1_max : integer;
+      variable phase_inc    : integer;
    begin
       kc_kf := config.kc * 64 + config.kf;
+
+      case config.oper_m1.dt2 is
+         when 1 => kc_kf := kc_kf + 512;
+         when 2 => kc_kf := kc_kf + 628;
+         when 3 => kc_kf := kc_kf + 800;
+         when others => null;
+      end case;
 
       key_note   := kc_kf mod 1024;
       key_octave := kc_kf / 1024;
@@ -79,6 +93,38 @@ package body ym2151_model_pkg is
          when others => phase_inc := 0;
       end case;
 
+      case config.oper_m1.dt1 is
+         when 1 | 5  => freq_dt1     := calc_freq_dt1(kc_kf/256-36);
+                        freq_dt1_max := 8;
+         when 2 | 6  => freq_dt1     := calc_freq_dt1(kc_kf/256-28);
+                        freq_dt1_max := 16;
+         when 3 | 7  => freq_dt1     := calc_freq_dt1(kc_kf/256-24);
+                        freq_dt1_max := 22;
+         when others => freq_dt1     := 0;
+                        freq_dt1_max := 0;
+      end case;
+
+      if freq_dt1 > freq_dt1_max then
+         freq_dt1 := freq_dt1_max;
+      end if;
+
+      if config.oper_m1.dt1 < 4 then
+         phase_inc := phase_inc + freq_dt1;
+      else
+         phase_inc := phase_inc - freq_dt1;
+      end if;
+
+      if config.oper_m1.mul = 0 then
+         phase_inc := phase_inc / 2;
+      else
+         phase_inc := phase_inc * config.oper_m1.mul;
+      end if;
+
+--      report "kc_kf=" & integer'image(kc_kf)
+--         & ", freq_note=" & real'image(freq_note)
+--         & ", phinc_note=" & integer'image(phinc_note)
+--         & ", freq_dt1=" & integer'image(freq_dt1)
+--         & ", phase_inc=" & integer'image(phase_inc);
       return phase_inc;
    end function calc_phase_inc;
 
@@ -138,6 +184,7 @@ package body ym2151_model_pkg is
       variable sum_v         : integer;
 
    begin
+
       phase_inc_v   := calc_phase_inc(config);
       out_v         := 0;
       phase_v       := (phase_inc_v * step) / 1024;

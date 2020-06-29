@@ -20,6 +20,7 @@ SRC    += $(SRC_DIR)/eg/eg_attenuation.vhd
 SRC    += $(SRC_DIR)/envelope_generator.vhd
 SRC    += $(SRC_DIR)/accumulator.vhd
 SRC    += $(SRC_DIR)/pg/rom_freq.vhd
+SRC    += $(SRC_DIR)/pg/dt1.vhd
 SRC    += $(SRC_DIR)/pg/calc_freq.vhd
 SRC    += $(SRC_DIR)/phase_generator.vhd
 SRC    += $(SRC_DIR)/op/rom_logsin.vhd

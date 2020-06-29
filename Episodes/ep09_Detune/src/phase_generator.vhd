@@ -24,6 +24,9 @@ entity phase_generator is
       -- Configuration input
       key_code_i     : in  std_logic_vector(6 downto 0);
       key_fraction_i : in  std_logic_vector(5 downto 0);
+      dt1_i          : in  std_logic_vector(2 downto 0);
+      dt2_i          : in  std_logic_vector(1 downto 0);
+      mul_i          : in  std_logic_vector(3 downto 0);
       -- From Envelope Generator
       phase_rst_i    : in  std_logic;
       -- Phase output
@@ -71,6 +74,9 @@ begin
          clk_i          => clk_i,
          key_code_i     => key_code_i,
          key_fraction_i => key_fraction_i,
+         dt1_i          => dt1_i,
+         dt2_i          => dt2_i,
+         mul_i          => mul_i,
          phase_inc_II_o => phase_inc_II_s
       ); -- i_calc_freq
 

@@ -196,14 +196,17 @@ begin
 
       -- Test all operator modes
       for mode in 0 to 7 loop
-         config            := C_CONFIG_DEFAULT;
-         config.mode       := mode;
-         config.fb         := mode;
-         config.kc         := 16#2A# + 4*mode;
-         config.oper_m1.tl := 8;
-         config.oper_c1.tl := 0;
-         config.oper_m2.tl := 24;
-         config.oper_c2.tl := 16;
+         config             := C_CONFIG_DEFAULT;
+         config.mode        := mode;
+         config.fb          := mode;
+         config.kc          := 16#2A# + 4*mode;
+         config.oper_m1.tl  := 8;
+         config.oper_m1.dt1 := mode;
+         config.oper_m1.dt2 := mode mod 4;
+         config.oper_m1.mul := mode;
+         config.oper_c1.tl  := 0;
+         config.oper_m2.tl  := 24;
+         config.oper_c2.tl  := 16;
          run_test_waveform(config, 1000);
       end loop;
 
