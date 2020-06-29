@@ -36,7 +36,6 @@ package ym2151_bfm_pkg is
                           signal   ym2151_io : inout ym2151_if_t);
 
    type oper_t is record
-      mul : integer;
       tl  : integer;
       ar  : integer;
       dr  : integer;
@@ -46,7 +45,6 @@ package ym2151_bfm_pkg is
    end record oper_t;
 
    constant C_OPER_DEFAULT : oper_t := (
-      mul => 1,
       tl  => 127,
       ar  => 31,
       dr  => 0,
@@ -104,7 +102,7 @@ package body ym2151_bfm_pkg is
                           signal   clk_i     : in    std_logic;
                           signal   ym2151_io : inout ym2151_if_t) is
    begin
---      report "Writing: 0x" & to_hstring(addr_i) & " <= 0x" & to_hstring(data_i);
+--      report "$0" & to_hstring(addr_i) & "," & to_hstring(data_i);
       ym2151_io.cfg_valid <= '1';
       ym2151_io.cfg_addr  <= addr_i;
       ym2151_io.cfg_data  <= data_i;
@@ -132,7 +130,7 @@ package body ym2151_bfm_pkg is
       procedure config_oper(idx  : integer;
                             oper : oper_t) is
       begin
-         write(X"40" + idx*8, oper.mul);
+         write(X"40" + idx*8, 1);
          write(X"60" + idx*8, oper.tl);
          write(X"80" + idx*8, oper.ar);
          write(X"A0" + idx*8, oper.dr);

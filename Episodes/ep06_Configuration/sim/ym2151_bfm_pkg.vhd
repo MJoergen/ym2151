@@ -74,7 +74,7 @@ package body ym2151_bfm_pkg is
                           signal   clk_i     : in    std_logic;
                           signal   ym2151_io : inout ym2151_if_t) is
    begin
---      report "Writing: 0x" & to_hstring(addr_i) & " <= 0x" & to_hstring(data_i);
+--      report "$0" & to_hstring(addr_i) & "," & to_hstring(data_i);
       ym2151_io.cfg_valid <= '1';
       ym2151_io.cfg_addr  <= addr_i;
       ym2151_io.cfg_data  <= data_i;
