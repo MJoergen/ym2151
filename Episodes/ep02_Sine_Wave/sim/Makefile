@@ -33,6 +33,10 @@ default: html
 show: $(FST)
 	gtkwave $(FST) $(SAVE)
 
+.PHONY: show_coverage
+show_coverage: html
+	xdg-open html/index.html
+
 $(FST): $(TB)
 	ghdl -r --std=08 --workdir=build $(TB) --fst=$(FST)
 
